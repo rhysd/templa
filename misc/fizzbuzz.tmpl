@@ -1,0 +1,16 @@
+fizz = "fizz"
+buzz = "buzz"
+fizzbuzz = fizz + buzz
+
+to_string(x) = String(to_char(x)) + if x < 10 then "" else to_string(x-1)
+
+to_fizzbuzz(n) = case
+                 | n % 15 == 0 then fizzbuzz
+                 | n %  3 == 0 then fizz
+                 | n %  5 == 0 then buzz
+                 | otherwise        to_string(n)
+
+fizzbuzz_string(n) = to_fizzbuzz(n) + fizzbuzz_string(n-1) + '\n'
+fizzbuzz_string(0) = ""
+
+main = print(fizzbuzz_string(10))

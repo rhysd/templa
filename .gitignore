@@ -3,6 +3,7 @@ hoge*
 a.out
 *.gch
 *.o
+templa
 
 CMakeCache.txt
 CMakeFiles/*

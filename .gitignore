@@ -2,3 +2,8 @@ tmp*
 hoge*
 a.out
 *.gch
+*.o
+
+CMakeCache.txt
+CMakeFiles/*
+cmake_install.cmake

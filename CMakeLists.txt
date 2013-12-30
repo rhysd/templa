@@ -16,6 +16,7 @@ include_directories( "${PROJECT_SOURCE_DIR}/src" )
 add_definitions(-std=c++1y -g -Wall -Wextra)
 
 find_package(Boost 1.55.0)
+include_directories(${Boost_INCLUDE_DIRS})
 
 file(GLOB_RECURSE CPPFILES ${PROJECT_SOURCE_DIR}/src/*.cpp)
 add_executable(templa ${CPPFILES})

@@ -9,7 +9,7 @@ namespace templa {
 
 class compiler{
 public:
-    void compile(std::string const& code);
+    std::string compile(std::string const& code);
 private:
     syntax::parser parser;
 };

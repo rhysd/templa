@@ -2,9 +2,10 @@
 
 namespace templa {
 
-void compiler::compile(std::string const& code)
+std::string compiler::compile(std::string const& code)
 {
     parser.parse(code);
+    return "";
 }
 
 } // namespace templa

@@ -27,7 +27,7 @@ guard :shell do
     puts separator
     puts Time.now.to_s
 
-    system "make"
+    system "make -j4"
     notify "templa: Build failed" unless $?.success?
     $?.success?
   end

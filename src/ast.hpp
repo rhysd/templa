@@ -7,6 +7,7 @@
 
 #include <boost/optional.hpp>
 #include <boost/mpl/vector/vector30.hpp>
+#include <boost/mpl/lambda.hpp>
 #include <boost/variant/variant.hpp>
 #include <boost/variant/recursive_wrapper.hpp>
 
@@ -39,39 +40,53 @@ struct func_call;
 struct call_args;
 
 class ast_node {
-public:
 
+    template<class T>
+    struct make_recursive_wrapper {
+        using type = boost::recursive_wrapper<T>;
+    };
+
+public:
     // use recursive_wrapper even if the type doesn't have ast_node value
     // because held types can't be incomplete type.
-    using node_types = boost::mpl::vector24< boost::recursive_wrapper<program>
-                                           , boost::recursive_wrapper<decl_func>
-                                           , boost::recursive_wrapper<decl_params>
-                                           , boost::recursive_wrapper<list_match>
-                                           , boost::recursive_wrapper<type_match>
-                                           , boost::recursive_wrapper<statement>
-                                           , boost::recursive_wrapper<let_statement>
-                                           , boost::recursive_wrapper<if_statement>
-                                           , boost::recursive_wrapper<case_statement>
-                                           , boost::recursive_wrapper<case_when>
-                                           , boost::recursive_wrapper<expression>
-                                           , boost::recursive_wrapper<formula>
-                                           , boost::recursive_wrapper<term>
-                                           , boost::recursive_wrapper<factor>
-                                           , boost::recursive_wrapper<relational_operator>
-                                           , boost::recursive_wrapper<additive_operator>
-                                           , boost::recursive_wrapper<mult_operator>
-                                           , boost::recursive_wrapper<constant>
-                                           , boost::recursive_wrapper<list>
-                                           , boost::recursive_wrapper<enum_list>
-                                           , boost::recursive_wrapper<int_list>
-                                           , boost::recursive_wrapper<char_list>
-                                           , boost::recursive_wrapper<func_call>
-                                           , boost::recursive_wrapper<call_args> >;
-
-    using value_type = typename boost::make_variant_over< node_types >::type;
+    using value_type =
+        typename boost::make_variant_over<
+            typename boost::mpl::transform<
+                boost::mpl::vector24<
+                    program,
+                    decl_func,
+                    decl_params,
+                    list_match,
+                    type_match,
+                    statement,
+                    let_statement,
+                    if_statement,
+                    case_statement,
+                    case_when,
+                    expression,
+                    formula,
+                    term,
+                    factor,
+                    relational_operator,
+                    additive_operator,
+                    mult_operator,
+                    constant,
+                    list,
+                    enum_list,
+                    int_list,
+                    char_list,
+                    func_call,
+                    call_args
+                >,
+                typename boost::mpl::lambda<
+                    make_recursive_wrapper<boost::mpl::_1>
+                >::type
+            >::type
+        >::type;
 
     std::size_t line;
     std::size_t col;
+
     value_type value;
 };
 

@@ -92,54 +92,65 @@ public:
 
 struct program{
     std::vector<ast_node> function_declarations;
+    static const char symbol[];
 };
 
 struct decl_func{
     std::string function_name;
     boost::optional<ast_node> maybe_declaration_params;
     ast_node statement;
+    static const char symbol[];
 };
 
 struct decl_params{
     std::vector<ast_node> declaration_params;
+    static const char symbol[];
 };
 
 struct list_match{
     std::vector<std::string> elements;
     std::string rest_elems_name;
+    static const char symbol[];
 };
 
 struct type_match{
     std::string param_name;
     std::string type_name;
+    static const char symbol[];
 };
 
 struct statement{
     ast_node value;
+    static const char symbol[];
 };
 
 struct let_statement{
     std::vector<ast_node> function_declarations;
+    static const char symbol[];
 };
 
 struct if_statement{
     ast_node condition;
     ast_node expression_if_true;
     ast_node expression_if_false;
+    static const char symbol[];
 };
 
 struct case_statement{
     std::vector<ast_node> case_when;
     ast_node otherwise_expression;
+    static const char symbol[];
 };
 
 struct case_when{
     ast_node condition;
     ast_node then_expression;
+    static const char symbol[];
 };
 
 struct expression{
     std::vector<ast_node> formulae;
+    static const char symbol[];
 };
 
 struct formula{
@@ -149,26 +160,32 @@ struct formula{
     };
     boost::optional<sign> sign;
     std::vector<ast_node> terms;
+    static const char symbol[];
 };
 
 struct term{
     std::vector<ast_node> factors;
+    static const char symbol[];
 };
 
 struct factor{
     ast_node value;
+    static const char symbol[];
 };
 
 struct relational_operator{
     std::string value;
+    static const char symbol[];
 };
 
 struct additive_operator{
     std::string value;
+    static const char symbol[];
 };
 
 struct mult_operator{
     std::string value;
+    static const char symbol[];
 };
 
 struct constant{
@@ -177,33 +194,40 @@ struct constant{
                     , bool
                     , std::string
                     , ast_node > value;
+    static const char symbol[];
 };
 
 struct list{
     ast_node value;
+    static const char symbol[];
 };
 
 struct enum_list{
     std::vector<ast_node> elements;
+    static const char symbol[];
 };
 
 struct int_list{
     int min;
     int max;
+    static const char symbol[];
 };
 
 struct char_list{
     char begin;
     char end;
+    static const char symbol[];
 };
 
 struct func_call{
     std::string function_name;
     boost::optional<ast_node> maybe_call_arguments;
+    static const char symbol[];
 };
 
 struct call_args{
     std::vector<ast_node> arguments;
+    static const char symbol[];
 };
 
 

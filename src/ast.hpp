@@ -40,7 +40,6 @@ struct func_call;
 struct call_args;
 
 class ast_node {
-
     template<class T>
     struct make_recursive_wrapper {
         using type = boost::recursive_wrapper<T>;

@@ -12,56 +12,56 @@
 namespace templa {
 namespace ast {
 
+using boost::adaptors::transformed;
+using boost::algorithm::join;
+
 struct ast_dumper : boost::static_visitor<std::string> {
 
     ast_dumper(std::size_t const indent)
         : indent(indent)
     {}
 
-    std::string operator()(program const& ast) const;
-    std::string operator()(decl_func const& ast) const;
-    std::string operator()(decl_params const& ast) const;
-    std::string operator()(list_match const& ast) const;
-    std::string operator()(type_match const& ast) const;
-    std::string operator()(statement const& ast) const;
-    std::string operator()(let_statement const& ast) const;
-    std::string operator()(if_statement const& ast) const;
-    std::string operator()(case_statement const& ast) const;
-    std::string operator()(case_when const& ast) const;
-    std::string operator()(expression const& ast) const;
-    std::string operator()(formula const& ast) const;
-    std::string operator()(term const& ast) const;
-    std::string operator()(factor const& ast) const;
-    std::string operator()(relational_operator const& ast) const;
-    std::string operator()(additive_operator const& ast) const;
-    std::string operator()(mult_operator const& ast) const;
-    std::string operator()(constant const& ast) const;
-    std::string operator()(list const& ast) const;
-    std::string operator()(enum_list const& ast) const;
-    std::string operator()(int_list const& ast) const;
-    std::string operator()(char_list const& ast) const;
-    std::string operator()(func_call const& ast) const;
-    std::string operator()(call_args const& ast) const;
+    std::string operator()(program const& node) const;
+    std::string operator()(decl_func const& node) const;
+    std::string operator()(decl_params const& node) const;
+    std::string operator()(list_match const& node) const;
+    std::string operator()(type_match const& node) const;
+    std::string operator()(statement const& node) const;
+    std::string operator()(let_statement const& node) const;
+    std::string operator()(if_statement const& node) const;
+    std::string operator()(case_statement const& node) const;
+    std::string operator()(case_when const& node) const;
+    std::string operator()(expression const& node) const;
+    std::string operator()(formula const& node) const;
+    std::string operator()(term const& node) const;
+    std::string operator()(factor const& node) const;
+    std::string operator()(relational_operator const& node) const;
+    std::string operator()(additive_operator const& node) const;
+    std::string operator()(mult_operator const& node) const;
+    std::string operator()(constant const& node) const;
+    std::string operator()(list const& node) const;
+    std::string operator()(enum_list const& node) const;
+    std::string operator()(int_list const& node) const;
+    std::string operator()(char_list const& node) const;
+    std::string operator()(func_call const& node) const;
+    std::string operator()(call_args const& node) const;
 
 private:
-    std::string visit_ast(ast_node const& ast) const;
+    std::string visit_node(ast_node const& node) const;
     template<class A>
     std::string symbol(A const &) const;
 
     std::size_t indent;
 };
 
-using boost::adaptors::transformed;
-using boost::algorithm::join;
-
 struct constant_visitor : boost::static_visitor<std::string> {
     constant_visitor(std::size_t const indent)
         : indent(indent)
     {}
 
-    std::string operator()(ast_node const& a) const
+    std::string operator()(ast_node const& n) const
     {
-        return boost::apply_visitor(ast_dumper{indent + 1}, a.value);
+        return boost::apply_visitor(ast_dumper{indent + 1}, n.value);
     }
 
     template<class T>
@@ -72,9 +72,9 @@ struct constant_visitor : boost::static_visitor<std::string> {
     std::size_t indent;
 };
 
-std::string ast_dumper::visit_ast(ast_node const& ast) const
+std::string ast_dumper::visit_node(ast_node const& node) const
 {
-    return boost::apply_visitor(ast_dumper{indent + 1}, ast.value);
+    return boost::apply_visitor(ast_dumper{indent + 1}, node.value);
 }
 
 template<class A>
@@ -83,178 +83,178 @@ std::string ast_dumper::symbol(A const &) const
     return std::string(indent, ' ') + A::symbol + "\n";
 }
 
-std::string ast_dumper::operator()(program const& ast) const
+std::string ast_dumper::operator()(program const& node) const
 {
-    return symbol(ast) + join(
-               ast.function_declarations | transformed([this](auto const& a){
-                       return visit_ast(a);
+    return symbol(node) + join(
+               node.function_declarations | transformed([this](auto const& n){
+                       return visit_node(n);
                    })
                , "\n"
            );
 }
 
-std::string ast_dumper::operator()(decl_func const& ast) const
+std::string ast_dumper::operator()(decl_func const& node) const
 {
-    auto result = symbol(ast) + std::string(indent+1, ' ') + "FUNC_NAME: " + ast.function_name + "\n";
-    if (ast.maybe_declaration_params) {
-        result += visit_ast(*ast.maybe_declaration_params) + "\n";
+    auto result = symbol(node) + std::string(indent+1, ' ') + "FUNC_NAME: " + node.function_name + "\n";
+    if (node.maybe_declaration_params) {
+        result += visit_node(*node.maybe_declaration_params) + "\n";
     }
-    result += visit_ast(ast.statement);
+    result += visit_node(node.statement);
     return result;
 }
 
-std::string ast_dumper::operator()(decl_params const& ast) const 
+std::string ast_dumper::operator()(decl_params const& node) const 
 {
-    return symbol(ast) + join(
-                ast.declaration_params | transformed([this](auto const& a){ return visit_ast(a); })
+    return symbol(node) + join(
+                node.declaration_params | transformed([this](auto const& n){ return visit_node(n); })
               , "\n"
             );
 }
 
-std::string ast_dumper::operator()(list_match const& ast) const
+std::string ast_dumper::operator()(list_match const& node) const
 {
-    return symbol(ast) + join(
-                ast.elements | transformed([this](auto const& s){ return "DECL_PARAM: " + s; })
+    return symbol(node) + join(
+                node.elements | transformed([this](auto const& s){ return "DECL_PARAM: " + s; })
               , "\n"
             );
 }
 
-std::string ast_dumper::operator()(type_match const& ast) const
+std::string ast_dumper::operator()(type_match const& node) const
 {
-    return symbol(ast) +
-        std::string(indent+1, ' ') + "PARAM_NAME: " + ast.param_name + "\n" +
-        std::string(indent+1, ' ') + "TYPE_NAME: " + ast.type_name + "\n";
+    return symbol(node) +
+        std::string(indent+1, ' ') + "PARAM_NAME: " + node.param_name + "\n" +
+        std::string(indent+1, ' ') + "TYPE_NAME: " + node.type_name + "\n";
 }
 
-std::string ast_dumper::operator()(statement const& ast) const
+std::string ast_dumper::operator()(statement const& node) const
 {
-    return symbol(ast) + visit_ast(ast.value);
+    return symbol(node) + visit_node(node.value);
 }
 
-std::string ast_dumper::operator()(let_statement const& ast) const
+std::string ast_dumper::operator()(let_statement const& node) const
 {
-    return symbol(ast) + join(
-                ast.function_declarations | transformed([this](auto const& a){ return visit_ast(a); })
+    return symbol(node) + join(
+                node.function_declarations | transformed([this](auto const& n){ return visit_node(n); })
               , "\n"
             );
 }
 
-std::string ast_dumper::operator()(if_statement const& ast) const
+std::string ast_dumper::operator()(if_statement const& node) const
 {
-    return symbol(ast) +
-            visit_ast(ast.condition) + "\n" +
-            visit_ast(ast.expression_if_true) + "\n" +
-            visit_ast(ast.expression_if_false);
+    return symbol(node) +
+            visit_node(node.condition) + "\n" +
+            visit_node(node.expression_if_true) + "\n" +
+            visit_node(node.expression_if_false);
 }
 
-std::string ast_dumper::operator()(case_statement const& ast) const
+std::string ast_dumper::operator()(case_statement const& node) const
 {
-    return symbol(ast) + join(
-                ast.case_when | transformed([this](auto const& a){ return visit_ast(a); })
+    return symbol(node) + join(
+                node.case_when | transformed([this](auto const& n){ return visit_node(n); })
               , "\n"
-            ) + "\n" + visit_ast(ast.otherwise_expression);
+            ) + "\n" + visit_node(node.otherwise_expression);
 }
 
-std::string ast_dumper::operator()(case_when const& ast) const
+std::string ast_dumper::operator()(case_when const& node) const
 {
-    return symbol(ast) + visit_ast(ast.condition) + "\n" + visit_ast(ast.then_expression);
+    return symbol(node) + visit_node(node.condition) + "\n" + visit_node(node.then_expression);
 }
 
-std::string ast_dumper::operator()(expression const& ast) const
+std::string ast_dumper::operator()(expression const& node) const
 {
-    return symbol(ast) + join(
-                ast.formulae | transformed([this](auto const& a){ return visit_ast(a); })
+    return symbol(node) + join(
+                node.formulae | transformed([this](auto const& n){ return visit_node(n); })
               , "\n"
             );
 }
 
-std::string ast_dumper::operator()(formula const& ast) const
+std::string ast_dumper::operator()(formula const& node) const
 {
-    auto result = symbol(ast);
-    if (ast.maybe_sign) {
-        auto &sign = *ast.maybe_sign;
+    auto result = symbol(node);
+    if (node.maybe_sign) {
+        auto &sign = *node.maybe_sign;
         result += std::string(indent+1, ' ') + "SIGN: " + (sign == formula::sign::minus ? "-" : "+") + "\n";
     }
     result += join(
-                ast.terms | transformed([this](auto const& a){ return visit_ast(a); })
+                node.terms | transformed([this](auto const& n){ return visit_node(n); })
               , "\n"
             );
     return result;
 }
 
-std::string ast_dumper::operator()(term const& ast) const
+std::string ast_dumper::operator()(term const& node) const
 {
-    return symbol(ast) + join(
-                ast.factors | transformed([this](auto const& a){ return visit_ast(a); })
+    return symbol(node) + join(
+                node.factors | transformed([this](auto const& n){ return visit_node(n); })
               , "\n"
             );
 }
 
-std::string ast_dumper::operator()(factor const& ast) const
+std::string ast_dumper::operator()(factor const& node) const
 {
-    return symbol(ast) + visit_ast(ast.value);
+    return symbol(node) + visit_node(node.value);
 }
 
-std::string ast_dumper::operator()(relational_operator const& ast) const
+std::string ast_dumper::operator()(relational_operator const& node) const
 {
-    return std::string(indent, ' ') + relational_operator::symbol + ": " + ast.value;
+    return std::string(indent, ' ') + relational_operator::symbol + ": " + node.value;
 }
 
-std::string ast_dumper::operator()(additive_operator const& ast) const
+std::string ast_dumper::operator()(additive_operator const& node) const
 {
-    return std::string(indent, ' ') + additive_operator::symbol + ": " + ast.value;
+    return std::string(indent, ' ') + additive_operator::symbol + ": " + node.value;
 }
 
-std::string ast_dumper::operator()(mult_operator const& ast) const
+std::string ast_dumper::operator()(mult_operator const& node) const
 {
-    return std::string(indent, ' ') + mult_operator::symbol + ": " + ast.value;
+    return std::string(indent, ' ') + mult_operator::symbol + ": " + node.value;
 }
 
-std::string ast_dumper::operator()(constant const& ast) const
+std::string ast_dumper::operator()(constant const& node) const
 {
-    return symbol(ast) + boost::apply_visitor(constant_visitor{indent}, ast.value);
+    return symbol(node) + boost::apply_visitor(constant_visitor{indent}, node.value);
 }
 
-std::string ast_dumper::operator()(list const& ast) const
+std::string ast_dumper::operator()(list const& node) const
 {
-    return symbol(ast) + visit_ast(ast.value);
+    return symbol(node) + visit_node(node.value);
 }
 
-std::string ast_dumper::operator()(enum_list const& ast) const
+std::string ast_dumper::operator()(enum_list const& node) const
 {
-    return symbol(ast) + join(
-                ast.elements | transformed([this](auto const& a){ return visit_ast(a); })
+    return symbol(node) + join(
+                node.elements | transformed([this](auto const& n){ return visit_node(n); })
               , "\n"
             );
 }
 
-std::string ast_dumper::operator()(int_list const& ast) const
+std::string ast_dumper::operator()(int_list const& node) const
 {
-    return symbol(ast) +
-        std::string(indent+1, ' ') + "LIST_MIN: " + std::to_string(ast.min) + "\n" +
-        std::string(indent+1, ' ') + "LIST_MAX: " + std::to_string(ast.max);
+    return symbol(node) +
+        std::string(indent+1, ' ') + "LIST_MIN: " + std::to_string(node.min) + "\n" +
+        std::string(indent+1, ' ') + "LIST_MAX: " + std::to_string(node.max);
 }
 
-std::string ast_dumper::operator()(char_list const& ast) const
+std::string ast_dumper::operator()(char_list const& node) const
 {
-    return symbol(ast) +
-        std::string(indent+1, ' ') + "CHAR_BEGIN: " + std::to_string(ast.begin) + "\n" +
-        std::string(indent+1, ' ') + "CHAR_END: " + std::to_string(ast.end);
+    return symbol(node) +
+        std::string(indent+1, ' ') + "CHAR_BEGIN: " + std::to_string(node.begin) + "\n" +
+        std::string(indent+1, ' ') + "CHAR_END: " + std::to_string(node.end);
 }
 
-std::string ast_dumper::operator()(func_call const& ast) const
+std::string ast_dumper::operator()(func_call const& node) const
 {
-    auto result = symbol(ast) + std::string(indent+1, ' ') + "FUNC_NAME: " + ast.function_name;
-    if (ast.maybe_call_arguments) {
-        result += "\n" + visit_ast(*ast.maybe_call_arguments);
+    auto result = symbol(node) + std::string(indent+1, ' ') + "FUNC_NAME: " + node.function_name;
+    if (node.maybe_call_arguments) {
+        result += "\n" + visit_node(*node.maybe_call_arguments);
     }
     return result;
 }
 
-std::string ast_dumper::operator()(call_args const& ast) const
+std::string ast_dumper::operator()(call_args const& node) const
 {
-    return symbol(ast) + join(
-                ast.arguments | transformed([this](auto const& a){ return visit_ast(a); })
+    return symbol(node) + join(
+                node.arguments | transformed([this](auto const& n){ return visit_node(n); })
               , "\n"
             );
 }

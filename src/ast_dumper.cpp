@@ -52,6 +52,7 @@ private:
         return boost::apply_visitor(ast_dumper{indent + 1}, node.value);
     }
 
+    // Deduct A from its argument
     template<class A>
     std::string symbol(A const &) const
     {
@@ -61,6 +62,7 @@ private:
     std::size_t indent;
 };
 
+// Do not be an inner class because template isn't available in inner classes
 struct constant_visitor : boost::static_visitor<std::string> {
     constant_visitor(std::size_t const indent)
         : indent(indent)

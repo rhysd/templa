@@ -47,9 +47,16 @@ struct ast_dumper : boost::static_visitor<std::string> {
     std::string operator()(call_args const& node) const;
 
 private:
-    std::string visit_node(ast_node const& node) const;
+    std::string visit_node(ast_node const& node) const
+    {
+        return boost::apply_visitor(ast_dumper{indent + 1}, node.value);
+    }
+
     template<class A>
-    std::string symbol(A const &) const;
+    std::string symbol(A const &) const
+    {
+        return std::string(indent, ' ') + A::symbol + "\n";
+    }
 
     std::size_t indent;
 };
@@ -71,17 +78,6 @@ struct constant_visitor : boost::static_visitor<std::string> {
     }
     std::size_t indent;
 };
-
-std::string ast_dumper::visit_node(ast_node const& node) const
-{
-    return boost::apply_visitor(ast_dumper{indent + 1}, node.value);
-}
-
-template<class A>
-std::string ast_dumper::symbol(A const &) const
-{
-    return std::string(indent, ' ') + A::symbol + "\n";
-}
 
 std::string ast_dumper::operator()(program const& node) const
 {

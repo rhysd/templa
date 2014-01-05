@@ -157,7 +157,7 @@ struct formula{
         minus = 1,
         plus
     };
-    boost::optional<sign> sign;
+    boost::optional<sign> maybe_sign;
     std::vector<ast_node> terms;
     static const char symbol[];
 };
@@ -229,6 +229,10 @@ struct call_args{
     static const char symbol[];
 };
 
+class ast {
+public:
+    ast_node root;
+};
 
 } // namespace ast
 } // namespace templa

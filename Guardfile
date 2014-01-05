@@ -24,12 +24,13 @@ end
 
 guard :shell do
   watch %r{(^.+\.(?:hpp|cpp))$} do |m|
-    puts separator
-    puts Time.now.to_s
+    unless m[0] =~ /marching_complete_temp\.cpp$/
+      puts(separator, Time.now.to_s)
 
-    system "make -j4"
-    notify "templa: Build failed" unless $?.success?
-    $?.success?
+      system "make -j4"
+      notify "templa: Build failed" unless $?.success?
+      $?.success?
+    end
   end
 
   watch /CMakeLists.txt/ do |m|

@@ -1,3 +1,5 @@
+#include <stdexcept>
+
 #include "parser.hpp"
 
 namespace templa {
@@ -5,7 +7,7 @@ namespace syntax {
 
 void parser::parse(std::string const& code)
 {
-    throw "Parser: Not implemented.";
+    throw std::runtime_error("Parser: Not implemented");
 }
 
 } // namespace syntax

@@ -1,5 +1,7 @@
 #include <cstddef>
 
+#define BOOST_RESULT_OF_USE_DECLTYPE 1
+
 #include <boost/variant/apply_visitor.hpp>
 #include <boost/variant/static_visitor.hpp>
 #include <boost/range/adaptor/transformed.hpp>

@@ -3,12 +3,14 @@
 
 #include <string>
 
+#include "ast.hpp"
+
 namespace templa {
 namespace syntax {
 
 class parser{
 public:
-    void parse(std::string const& code);
+    ast::ast parse(std::string const& code);
 };
 
 } // namespace syntax

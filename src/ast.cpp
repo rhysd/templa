@@ -175,9 +175,19 @@ bool ast_node::operator==(ast_node const& rhs) const
     return boost::apply_visitor(equality_checker{}, this->value, rhs.value);
 }
 
+bool ast_node::operator!=(ast_node const& rhs) const
+{
+    return !(*this == rhs);
+}
+
 bool ast::operator==(ast const& rhs) const
 {
     return boost::apply_visitor(equality_checker{}, this->root.value, rhs.root.value);
+}
+
+bool ast::operator!=(ast const& rhs) const
+{
+    return !(*this == rhs);
 }
 
 } // namespace ast

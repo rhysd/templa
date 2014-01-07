@@ -48,6 +48,7 @@ class ast_node {
 public:
 
     bool operator==(ast_node const& rhs) const;
+    bool operator!=(ast_node const& rhs) const;
 
     // use recursive_wrapper even if the type doesn't have ast_node value
     // because held types can't be incomplete type.
@@ -236,6 +237,7 @@ class ast {
 public:
     ast_node root;
     bool operator==(ast const& rhs) const;
+    bool operator!=(ast const& rhs) const;
 };
 
 } // namespace ast

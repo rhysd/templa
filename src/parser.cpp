@@ -20,6 +20,7 @@ namespace ascii = boost::spirit::ascii;
 namespace phx = boost::phoenix;
 
 using qi::_val;
+using qi::lit;
 using qi::_1;
 using qi::_2;
 
@@ -31,6 +32,9 @@ class grammar : qi::grammar<Iterator, ast::ast_node(), ascii::space_type> {
 public:
     grammar() : grammar::base_type(root)
     {
+        relational_operator[_val = _1] = (lit("==") | "!=" | "<" | ">" | "<=" | ">=") [_val = phx::bind([](auto const& s){ return ast::relational_operator{s}; }, _1)];
+        additive_operator[_val = _1] = (lit("+") | "-" | "|" | "||") [_val = phx::bind([](auto const& s){ return ast::additive_operator{s}; }, _1)];
+        mult_operator[_val = _1] = (lit("*") | "/" | "%" | "&" | "&&") [_val = phx::bind([](auto const& s){ return ast::mult_operator{s}; }, _1)];
 
         qi::on_error<qi::fail>
         (

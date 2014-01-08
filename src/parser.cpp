@@ -3,11 +3,12 @@
 #define BOOST_SPIRIT_USE_PHOENIX_V3
 
 #include <boost/spirit/include/qi.hpp>
-
 #include <boost/spirit/include/phoenix_core.hpp>
+#include <boost/spirit/include/phoenix_object.hpp>
 #include <boost/spirit/include/phoenix_operator.hpp>
 #include <boost/spirit/include/phoenix_stl.hpp>
 #include <boost/spirit/include/phoenix_bind.hpp>
+#include <boost/spirit/include/support_line_pos_iterator.hpp>
 
 #include "parser.hpp"
 
@@ -30,6 +31,18 @@ class grammar : qi::grammar<Iterator, ast::ast_node(), ascii::space_type> {
 public:
     grammar() : grammar::base_type(root)
     {
+
+        qi::on_error<qi::fail>
+        (
+            root,
+            std::cerr
+                << phx::val( "Error! Expecting " )
+                << qi::_4                          // what failed?
+                << phx::val( " here: \"" )
+                << phx::construct<std::string>( qi::_3, _2 )    // iterators to error-pos, end
+                << phx::val( "\"" )
+                << std::endl
+        );
     }
 
 private:

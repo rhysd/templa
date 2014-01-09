@@ -153,6 +153,7 @@ struct case_when{
 
 struct expression{
     std::vector<ast_node> formulae;
+    // XXX it must has operators
     static const char symbol[];
 };
 
@@ -163,11 +164,13 @@ struct formula{
     };
     boost::optional<sign> maybe_sign;
     std::vector<ast_node> terms;
+    // XXX it must has operators
     static const char symbol[];
 };
 
 struct term{
     std::vector<ast_node> factors;
+    // XXX it must has operators
     static const char symbol[];
 };
 

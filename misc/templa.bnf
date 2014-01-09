@@ -18,7 +18,7 @@ ADDITIVE_OP   : "+" | "-" | "|" | "||"
 MULT_OP       : "*" | "/" | "%" | "&" | "&&"
 CONSTANT      : INTEGER | CHAR | BOOL | STRING | LIST
 LIST          : ENUM_LIST | INT_LIST | CHAR_LIST
-ENUM_LIST     : "[" [ EXPR {"," EXPR}] "]"
+ENUM_LIST     : "[" [ {EXPR {"," EXPR}}] "]"
 INT_LIST      : "[" INTEGER ".." INTEGER "]"
 CHAR_LIST     : "[" CHAR ".." CHAR "]"
 FUNC_CALL     : FUNC_NAME ["(" CALL_ARGS ")"]

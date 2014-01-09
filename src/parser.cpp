@@ -39,11 +39,14 @@ public:
         qi::on_error<qi::fail>
         (
             root,
+            // qi::_2 : end of string to parse
+            // qi::_3 : iterator at failed point
+            // qi::_4 : what failed?
             std::cerr
                 << phx::val( "Error! Expecting " )
-                << qi::_4                          // what failed?
+                << qi::_4
                 << phx::val( " here: \"" )
-                << phx::construct<std::string>( qi::_3, _2 )    // iterators to error-pos, end
+                << phx::construct<std::string>( qi::_3, _2 )
                 << phx::val( "\"" )
                 << std::endl
         );

@@ -10,7 +10,6 @@
 #include <boost/spirit/include/phoenix_bind.hpp>
 #include <boost/spirit/include/support_line_pos_iterator.hpp>
 
-#include "phoenix_helper.hpp"
 #include "parser.hpp"
 
 namespace templa {
@@ -24,7 +23,7 @@ using qi::_val;
 using qi::lit;
 using qi::_1;
 using qi::_2;
-using templa::phoenix::make_ast_node;
+using phx::bind;
 
 template<class Iterator>
 class grammar : qi::grammar<Iterator, ast::ast_node(), ascii::space_type> {
@@ -34,9 +33,9 @@ class grammar : qi::grammar<Iterator, ast::ast_node(), ascii::space_type> {
 public:
     grammar() : grammar::base_type(root)
     {
-        relational_operator[_val = _1] = (lit("==") | "!=" | "<" | ">" | "<=" | ">=") [_val = make_ast_node<ast::relational_operator>(_1)];
-        additive_operator[_val = _1] = (lit("+") | "-" | "|" | "||") [_val = make_ast_node<ast::additive_operator>(_1) ];
-        mult_operator[_val = _1] = (lit("*") | "/" | "%" | "&" | "&&") [_val = make_ast_node<ast::mult_operator>(_1)];
+        relational_operator = (lit("==") | "!=" | "<" | ">" | "<=" | ">=") [bind(&ast::relational_operator::value, _val)];
+        additive_operator = (lit("+") | "-" | "|" | "||") [bind(&ast::additive_operator::value, _val)];
+        mult_operator = (lit("*") | "/" | "%" | "&" | "&&") [bind(&ast::mult_operator::value, _val)];
 
         qi::on_error<qi::fail>
         (

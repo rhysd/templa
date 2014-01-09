@@ -3,6 +3,7 @@
 #define BOOST_SPIRIT_USE_PHOENIX_V3
 
 #include <boost/spirit/include/qi.hpp>
+#include <boost/spirit/include/qi_as.hpp>
 #include <boost/spirit/include/phoenix_core.hpp>
 #include <boost/spirit/include/phoenix_object.hpp>
 #include <boost/spirit/include/phoenix_operator.hpp>
@@ -33,9 +34,79 @@ class grammar : qi::grammar<Iterator, ast::ast_node(), ascii::space_type> {
 public:
     grammar() : grammar::base_type(root)
     {
-        relational_operator = (lit("==") | "!=" | "<" | ">" | "<=" | ">=") [bind(&ast::relational_operator::value, _val)];
-        additive_operator = (lit("+") | "-" | "|" | "||") [bind(&ast::additive_operator::value, _val)];
-        mult_operator = (lit("*") | "/" | "%" | "&" | "&&") [bind(&ast::mult_operator::value, _val)];
+
+        formula[_val = _1]
+            = (lit("+")[bind(&ast::formula::maybe_sign, ast::formula::sign::plus)]
+            | lit("-")[bind(&ast::formula::maybe_sign, ast::formula::sign::minus)])
+            >> ( term[bind(&ast::ast_node::value, _val)] % additive_operator
+            ) [bind(&ast::formula::terms, _val)];
+
+        term[_val = _1]
+            = (factor % mult_operator)[bind(&ast::ast_node::value, _val)];
+
+        factor
+            = ("!" >> factor
+            | "(" >> expression >> ")"
+            | constant
+            | func_call)[bind(&ast::factor::value, _val)];
+
+        relational_operator
+            = (lit("==")
+                 | "!="
+                 | "<"
+                 | ">"
+                 | "<="
+                 | ">=") [bind(&ast::relational_operator::value, _val)];
+
+        additive_operator
+            = (lit("+")
+                 | "-"
+                 | "|"
+                 | "||") [bind(&ast::additive_operator::value, _val)];
+
+        mult_operator
+            = (lit("*")
+                 | "/"
+                 | "%"
+                 | "&"
+                 | "&&") [bind(&ast::mult_operator::value, _val)];
+
+        constant[_val = _1]
+            = (qi::int_
+             | qi::char_
+             | qi::bool_
+             | '"' > qi::string > '"')[bind(&ast::constant::value, _val)]
+             | list [bind(&ast::ast_node::value, _val)];
+
+        list = (enum_list | int_list | char_list)[bind(&ast::list::value, _val)];
+
+        enum_list[_val = _1]
+            = "["
+            >> (expression % ",")[bind(&ast::ast_node::value, _val)]
+            > "]";
+
+        int_list
+            = "["
+            >> (qi::int_
+            >> ".."
+            >> qi::int_)[bind([](int const min, int const max){ return ast::int_list{min, max}; }, _1, _2)]
+            >> "]";
+
+        char_list
+            = ("["
+            >> qi::char_
+            >> ".."
+            >> qi::char_
+            >> "]")[bind([](char const min, char const max){ return ast::char_list{min, max}; }, _1, _2)];
+
+        func_call[_val = _1]
+            = qi::string[bind(&ast::func_call::function_name, _val)]
+            >> -("("
+            >> call_args[bind(&ast::ast_node::value, _val)]
+            >> ")");
+
+        call_args[_val = _1]
+            = (expression % ",")[bind(&ast::ast_node::value, _val)];
 
         qi::on_error<qi::fail>
         (

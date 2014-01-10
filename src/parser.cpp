@@ -1,6 +1,7 @@
 #include <stdexcept>
 
 #define BOOST_SPIRIT_USE_PHOENIX_V3
+#define BOOST_RESULT_OF_USE_DECLTYPE 1
 
 #include <boost/spirit/include/qi.hpp>
 #include <boost/spirit/include/qi_as.hpp>

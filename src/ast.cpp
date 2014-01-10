@@ -1,3 +1,5 @@
+#include <type_traits>
+
 #include <boost/variant/apply_visitor.hpp>
 #include <boost/variant/static_visitor.hpp>
 #include <boost/range/algorithm.hpp>
@@ -163,7 +165,7 @@ struct equality_checker : boost::static_visitor<bool> {
     }
 
     // Otherwise
-    template<class T, class U>
+    template<class T, class U, class = typename std::enable_if<!std::is_same<T, U>::value>::type>
     bool operator()(T const&, U const&) const
     {
         return false;

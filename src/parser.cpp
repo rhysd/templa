@@ -130,6 +130,7 @@ private:
     rule<ast::program()> program;
     rule<ast::decl_func()> decl_func;
     rule<ast::decl_params()> decl_params;
+    rule<ast::decl_param()> decl_param;
     rule<ast::list_match()> list_match;
     rule<ast::type_match()> type_match;
     rule<ast::statement()> statement;

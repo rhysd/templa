@@ -26,6 +26,7 @@ struct ast_dumper : boost::static_visitor<std::string> {
     std::string operator()(program const& node) const;
     std::string operator()(decl_func const& node) const;
     std::string operator()(decl_params const& node) const;
+    std::string operator()(decl_param const& node) const;
     std::string operator()(list_match const& node) const;
     std::string operator()(type_match const& node) const;
     std::string operator()(statement const& node) const;
@@ -109,6 +110,11 @@ std::string ast_dumper::operator()(decl_params const& node) const
                 node.declaration_params | transformed([this](auto const& n){ return visit_node(n); })
               , "\n"
             );
+}
+
+std::string ast_dumper::operator()(decl_param const& node) const 
+{
+    return symbol(node) + visit_node(node.value);
 }
 
 std::string ast_dumper::operator()(list_match const& node) const

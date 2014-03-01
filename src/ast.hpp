@@ -17,6 +17,7 @@ namespace ast {
 struct program;
 struct decl_func;
 struct decl_params;
+struct decl_param;
 struct list_match;
 struct type_match;
 struct statement;
@@ -55,10 +56,11 @@ public:
     using value_type =
         typename boost::make_variant_over<
             typename boost::mpl::transform<
-                boost::mpl::vector24<
+                boost::mpl::vector25<
                     program,
                     decl_func,
                     decl_params,
+                    decl_param,
                     list_match,
                     type_match,
                     statement,
@@ -107,6 +109,11 @@ struct decl_func{
 
 struct decl_params{
     std::vector<ast_node> declaration_params;
+    static const char symbol[];
+};
+
+struct decl_param{
+    ast_node value;
     static const char symbol[];
 };
 

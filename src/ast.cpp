@@ -12,6 +12,7 @@ namespace ast {
 char const program::symbol[] = "PROGRAM";
 char const decl_func::symbol[] = "DECL_FUNC";
 char const decl_params::symbol[] = "DECL_PARAMS";
+char const decl_param::symbol[] = "DECL_PARAM";
 char const list_match::symbol[] = "LIST_MATCH";
 char const type_match::symbol[] = "TYPE_MATCH";
 char const statement::symbol[] = "STMT";
@@ -51,6 +52,11 @@ struct equality_checker : boost::static_visitor<bool> {
     bool operator()(decl_params const& lhs, decl_params const& rhs) const
     {
         return boost::equal(lhs.declaration_params, rhs.declaration_params);
+    }
+
+    bool operator()(decl_param const& lhs, decl_param const& rhs) const
+    {
+        return lhs.value ==  rhs.value;
     }
 
     bool operator()(list_match const& lhs, list_match const& rhs) const

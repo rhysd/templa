@@ -36,6 +36,10 @@ class grammar : qi::grammar<Iterator, ast::ast_node(), ascii::space_type> {
 public:
     grammar() : grammar::base_type(root)
     {
+        root[_val = _1]
+            = program
+                [bind(&ast::ast_node::value, _val)];
+
         program[_val = _1]
             = (decl_func % "\n")
                 [bind(&ast::program::function_declarations, _val)];
@@ -240,15 +244,14 @@ private:
 ast::ast parser::parse(std::string const& code)
 {
     auto itr = std::begin(code);
-    auto const end = std::cend(code);
+    auto const end = std::end(code);
     grammar<decltype(itr)> spiritual_parser;
     ast::ast_node root;
 
-    // if(qi::phrase_parse(itr, end, spiritual_parser, ascii::space, root) && itr == end) {
-    //     return {root};
-    // } else {
-        throw std::runtime_error("Syntax error:");
+    // if (!qi::phrase_parse(itr, end, spiritual_parser, ascii::space, root) || itr != end) {
+    //     throw std::runtime_error("Syntax error:");
     // }
+    return {root};
 }
 
 } // namespace syntax

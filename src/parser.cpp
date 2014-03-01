@@ -25,6 +25,7 @@ using qi::_val;
 using qi::lit;
 using qi::_1;
 using qi::_2;
+using qi::_3;
 using phx::bind;
 
 template<class Iterator>
@@ -35,6 +36,79 @@ class grammar : qi::grammar<Iterator, ast::ast_node(), ascii::space_type> {
 public:
     grammar() : grammar::base_type(root)
     {
+        program[_val = _1]
+            = (decl_func % "\n")
+                [bind(&ast::program::function_declarations, _val)];
+
+        decl_func[_val = _1]
+            = qi::string
+                [bind(&ast::decl_func::function_name, _val)]
+            >> (-("(" >> decl_params >> ")"))
+                [bind(&ast::decl_func::maybe_declaration_params, _val)]
+            >> "="
+            >> statement
+                [bind(&ast::decl_func::statement, _val)];
+
+        decl_params[_val = _1]
+            = (decl_param % ",")
+                [bind(&ast::decl_params::declaration_params, _val)];
+
+        decl_param[_val = _1]
+            = (list_match | type_match | qi::string)
+                [bind(&ast::decl_param::value, _val)];
+
+        list_match[_val = _1]
+            = (+(qi::string >> ":"))
+                [bind(&ast::list_match::elements, _val)]
+            >> qi::string
+                [bind(&ast::list_match::rest_elems_name, _val)];
+
+        type_match[_val = _1]
+            = qi::string
+                [bind(&ast::type_match::param_name, _val)]
+            >> "::"
+            >> qi::string
+                [bind(&ast::type_match::type_name, _val)];
+
+        statement[_val = _1]
+            = (let_statement | if_statement | case_statement | expression)[bind(&ast::statement::value, _val)]
+            >> "\n";
+
+        let_statement[_val = _1]
+            = "let"
+            >> (decl_func % "\n")[bind(&ast::let_statement::function_declarations, _val)]
+            >> "in";
+
+        if_statement[_val = _1]
+            = "if"
+            >> expression
+                [bind(&ast::if_statement::condition, _val)]
+            >> "then"
+            >> expression
+                [bind(&ast::if_statement::expression_if_true, _val)]
+            >> "eles"
+            >> expression
+                [bind(&ast::if_statement::expression_if_false, _val)];
+
+        case_statement[_val = _1]
+            = "case"
+            >> (*case_when)
+                [bind(&ast::case_statement::case_when, _val)]
+            >> "|"
+            >> "otherwise"
+            >> expression
+                [bind(&ast::case_statement::otherwise_expression, _val)];
+
+        case_when[_val = _1]
+            = "|"
+            >> expression
+                [bind(&ast::case_when::condition, _val)]
+            >> "then"
+            >> expression
+                [bind(&ast::case_when::then_expression, _val)];
+
+        expression[_val = _1]
+            = (formula % relational_operator)[bind(&ast::ast_node::value, _val)];
 
         formula[_val = _1]
             = (-(lit("+") | lit("-")))[bind([](auto const& maybe_sign)

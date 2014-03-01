@@ -37,8 +37,17 @@ public:
     {
 
         formula[_val = _1]
-            = (lit("+")[bind(&ast::formula::maybe_sign, ast::formula::sign::plus)]
-            | lit("-")[bind(&ast::formula::maybe_sign, ast::formula::sign::minus)])
+            = (-(lit("+") | lit("-")))[bind([](auto const& maybe_sign)
+                    -> boost::optional<ast::formula::sign> {
+                        if (maybe_sign) {
+                            std::string const& sign = *maybe_sign;
+                            return sign == "+"
+                                ? ast::formula::sign::plus
+                                : ast::formula::sign::minus;
+                        } else {
+                            return boost::none;
+                        }
+                    }, _1)]
             >> ( term[bind(&ast::ast_node::value, _val)] % additive_operator
             ) [bind(&ast::formula::terms, _val)];
 

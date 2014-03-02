@@ -36,12 +36,12 @@ class grammar : public qi::grammar<Iterator, ast::ast_node(), ascii::space_type>
 public:
     grammar() : grammar::base_type(root)
     {
-        root[_val = _1]
+        root
             = program
                 [bind(&ast::ast_node::value, _val)]
         ;
 
-        program[_val = _1]
+        program
             = (decl_func % "\n")
                 [bind(&ast::program::function_declarations, _val)]
         ;
@@ -56,7 +56,7 @@ public:
                 [bind(&ast::decl_func::statement, _val)]
         ;
 
-        decl_params[_val = _1]
+        decl_params
             = (decl_param % ",")
                 [bind(&ast::decl_params::declaration_params, _val)]
         ;
@@ -197,8 +197,8 @@ public:
                 [bind(&ast::ast_node::value, _val)]
         ;
 
-        list =
-            (enum_list | int_list | char_list)
+        list[_val = _1]
+            = (enum_list | int_list | char_list)
                 [bind(&ast::list::value, _val)]
         ;
 
@@ -209,7 +209,7 @@ public:
             > "]"
         ;
 
-        int_list
+        int_list[_val = _1]
             = "["
             >> qi::int_
                 [bind(&ast::int_list::min, _val)]
@@ -219,7 +219,7 @@ public:
             >> "]"
         ;
 
-        char_list
+        char_list[_val = _1]
             = "["
             >> qi::char_
                 [bind(&ast::char_list::begin, _val)]

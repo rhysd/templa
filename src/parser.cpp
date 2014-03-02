@@ -222,20 +222,21 @@ public:
         char_list
             = "["
             >> qi::char_
-                [bind(&ast::int_list::begin, _val)]
+                [bind(&ast::char_list::begin, _val)]
             >> ".."
             >> qi::char_
-                [bind(&ast::int_list::end, _val)]
+                [bind(&ast::char_list::end, _val)]
             >> "]"
         ;
 
         func_call[_val = _1]
-            = qi::string[bind(&ast::func_call::function_name, _val)]
-            >> -(
+            = qi::string
+                [bind(&ast::func_call::function_name, _val)]
+            >> (-(
                 "("
                 >> call_args
+                >> ")")
                     [bind(&ast::ast_node::value, _val)]
-                >> ")"
             )
         ;
 

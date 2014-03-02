@@ -232,17 +232,17 @@ public:
         func_call[_val = _1]
             = qi::string
                 [bind(&ast::func_call::function_name, _val)]
-            >> (-(
-                "("
+            >> (
+                -("("
                 >> call_args
                 >> ")")
-                    [bind(&ast::ast_node::value, _val)]
             )
+                [bind(&ast::func_call::maybe_call_arguments, _val)]
         ;
 
         call_args[_val = _1]
             = (expression % ",")
-                [bind(&ast::ast_node::value, _val)]
+                [bind(&ast::call_args::arguments, _val)]
         ;
 
         qi::on_error<qi::fail>

@@ -29,7 +29,7 @@ using qi::_3;
 using phx::bind;
 
 template<class Iterator>
-class grammar : qi::grammar<Iterator, ast::ast_node(), ascii::space_type> {
+class grammar : public qi::grammar<Iterator, ast::ast_node(), ascii::space_type> {
     template<class Value>
     using rule = qi::rule<Iterator, Value, ascii::space_type>;
 
@@ -248,9 +248,9 @@ ast::ast parser::parse(std::string const& code)
     grammar<decltype(itr)> spiritual_parser;
     ast::ast_node root;
 
-    // if (!qi::phrase_parse(itr, end, spiritual_parser, ascii::space, root) || itr != end) {
-    //     throw std::runtime_error("Syntax error:");
-    // }
+    if (!qi::phrase_parse(itr, end, spiritual_parser, ascii::space, root) || itr != end) {
+        throw std::runtime_error("Syntax error:");
+    }
     return {root};
 }
 

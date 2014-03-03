@@ -28,226 +28,299 @@ using qi::_2;
 using qi::_3;
 using phx::bind;
 
+namespace detail {
+
+    template<class NodeType>
+    struct construct_node {
+        template<class... Args>
+        NodeType operator()(Args &&... args) const
+        {
+            return {args...};
+        }
+    };
+
+} // namespace detail
+
+template<class NodeType, class... Holders>
+inline auto bind_node(Holders &&... holders)
+{
+    return phx::bind(detail::construct_node<NodeType>{}, holders...);
+}
+
 template<class Iterator>
 class grammar : public qi::grammar<Iterator, ast::ast_node(), ascii::space_type> {
     template<class Value>
     using rule = qi::rule<Iterator, Value, ascii::space_type>;
 
 public:
-    grammar() : grammar::base_type(root)
+    grammar() : grammar::base_type(program)
     {
-        root
-            = program
-                [bind(&ast::ast_node::value, _val)]
-        ;
-
         program
-            = (decl_func % "\n")
-                [bind(&ast::program::function_declarations, _val)]
+            = (
+                decl_func % "\n"
+            ) [
+                bind_node<ast::program>(_1)
+            ]
         ;
 
-        decl_func[_val = _1]
-            = qi::string
-                [bind(&ast::decl_func::function_name, _val)]
-            >> (-("(" >> decl_params >> ")"))
-                [bind(&ast::decl_func::maybe_declaration_params, _val)]
-            >> "="
-            >> statement
-                [bind(&ast::decl_func::statement, _val)]
+        decl_func
+            = (
+                name
+                >> -('(' >> decl_params >> ')')
+                >> '='
+                >> statement
+            ) [
+                bind_node<ast::decl_func>(_1, _2, _3)
+            ]
         ;
 
         decl_params
-            = (decl_param % ",")
-                [bind(&ast::decl_params::declaration_params, _val)]
+            = (
+                decl_param % ","
+            ) [
+                bind_node<ast::decl_params>(_1)
+            ]
         ;
 
-        decl_param[_val = _1]
-            = (list_match | type_match | qi::string)
-                [bind(&ast::decl_param::value, _val)]
+        decl_param
+            = (
+                  list_match
+                | type_match
+                | name
+            ) [
+                bind_node<ast::decl_param>(_1)
+            ]
         ;
 
-        list_match[_val = _1]
-            = (+(qi::string >> ":"))
-                [bind(&ast::list_match::elements, _val)]
-            >> qi::string
-                [bind(&ast::list_match::rest_elems_name, _val)]
+        list_match
+            = (
+                +(name > ":")
+                > name
+            ) [
+                bind_node<ast::list_match>(_1, _2)
+            ]
         ;
 
-        type_match[_val = _1]
-            = qi::string
-                [bind(&ast::type_match::param_name, _val)]
-            >> "::"
-            >> qi::string
-                [bind(&ast::type_match::type_name, _val)]
+        type_match
+            = (
+                name > "::" > name
+            ) [
+                bind_node<ast::type_match>(_1, _2)
+            ]
         ;
 
-        statement[_val = _1]
-            = (let_statement | if_statement | case_statement | expression)
-                [bind(&ast::statement::value, _val)]
-            >> "\n"
+        statement
+            = (
+                ( let_statement
+                | if_statement
+                | case_statement
+                | expression
+                ) >> "\n"
+            ) [
+                bind_node<ast::statement>(_1)
+            ]
         ;
 
-        let_statement[_val = _1]
-            = "let"
-            >> (decl_func % "\n")
-                [bind(&ast::let_statement::function_declarations, _val)]
-            >> "in"
+        let_statement
+            = (
+                "let"
+                >> (decl_func % "\n")
+                >> "in"
+            ) [
+                bind_node<ast::let_statement>(_1)
+            ]
         ;
 
-        if_statement[_val = _1]
-            = "if"
-            >> expression
-                [bind(&ast::if_statement::condition, _val)]
-            >> "then"
-            >> expression
-                [bind(&ast::if_statement::expression_if_true, _val)]
-            >> "eles"
-            >> expression
-                [bind(&ast::if_statement::expression_if_false, _val)]
+        if_statement
+            = (
+                "if"
+                >> expression
+                >> "then"
+                >> expression
+                >> "else"
+                >> expression
+            ) [
+                bind_node<ast::if_statement>(_1, _2, _3)
+            ]
         ;
 
-        case_statement[_val = _1]
-            = "case"
-            >> (*case_when)
-                [bind(&ast::case_statement::case_when, _val)]
-            >> "|"
-            >> "otherwise"
-            >> expression
-                [bind(&ast::case_statement::otherwise_expression, _val)]
+        case_statement
+            = (
+                "case"
+                >> *case_when
+                >> "|"
+                >> "otherwise"
+                >> expression
+            ) [
+                bind_node<ast::case_statement>(_1, _2)
+            ]
         ;
 
-        case_when[_val = _1]
-            = "|"
-            >> expression
-                [bind(&ast::case_when::condition, _val)]
-            >> "then"
-            >> expression
-                [bind(&ast::case_when::then_expression, _val)]
+        case_when
+            = (
+                "|"
+                >> expression
+                >> "then"
+                >> expression
+            ) [
+                bind_node<ast::case_when>(_1, _2)
+            ]
         ;
 
-        expression[_val = _1]
-            = (formula % relational_operator)
-                [bind(&ast::ast_node::value, _val)]
+        expression
+            = (
+                // TODO: Get operator
+                formula % relational_operator
+            ) [
+                bind_node<ast::expression>(_1)
+            ]
         ;
 
-        formula[_val = _1]
-            = (-(lit("+") | lit("-")))
-                [bind([](auto const& maybe_sign)
-                    -> boost::optional<ast::formula::sign> {
-                        if (maybe_sign) {
-                            std::string const& sign = *maybe_sign;
-                            return sign == "+"
-                                ? ast::formula::sign::plus
-                                : ast::formula::sign::minus;
+        // FIXME: Too dirty
+        formula
+            = (
+                -( qi::char_('+') | qi::char_('-') )
+                >> (term % additive_operator)
+            ) [
+                bind(
+                    [](auto const& maybe_sign_char
+                     , auto const& terms)
+                        -> ast::formula
+                    {
+                        if (maybe_sign_char) {
+                            auto const& sign_char = *maybe_sign_char;
+                            return {sign_char == '+' ? ast::formula::sign::plus : ast::formula::sign::minus, terms};
                         } else {
-                            return boost::none;
+                            return {boost::none, terms};
                         }
-                    }, _1)]
-            >> (term[bind(&ast::ast_node::value, _val)] % additive_operator)
-                [bind(&ast::formula::terms, _val)]
+                    }, _1, _2)
+            ]
         ;
 
-        term[_val = _1]
-            = (factor % mult_operator)
-                [bind(&ast::ast_node::value, _val)]
+        term
+            = (
+                factor % mult_operator
+            ) [bind_node<ast::term>(_1)]
         ;
 
         factor
-            = ("!" >> factor
-            | "(" >> expression >> ")"
-            | constant
-            | func_call)
-                [bind(&ast::factor::value, _val)]
+            = (
+                  "!" >> factor
+                | "(" >> expression >> ")"
+                | constant
+                | func_call
+            ) [bind_node<ast::factor>(_1)]
         ;
 
         relational_operator
-            = (lit("==")
+            = (
+                qi::as_string[lit("==")
                  | "!="
                  | "<"
                  | ">"
                  | "<="
-                 | ">=")
-                [bind(&ast::relational_operator::value, _val)]
+                 | ">="]
+              ) [bind_node<ast::relational_operator>(_1)]
         ;
 
         additive_operator
-            = (lit("+")
+            = (
+                qi::as_string[lit("+")
                  | "-"
                  | "|"
-                 | "||")
-                [bind(&ast::additive_operator::value, _val)]
+                 | "||"]
+              ) [bind_node<ast::additive_operator>(_1)]
         ;
 
         mult_operator
-            = (lit("*")
+            = (
+                qi::as_string[(lit("*")
                  | "/"
                  | "%"
                  | "&"
-                 | "&&")
-                [bind(&ast::mult_operator::value, _val)]
+                 | "&&")]
+            ) [bind_node<ast::mult_operator>(_1)]
         ;
 
-        constant[_val = _1]
-            = (qi::int_
-             | qi::char_
-             | qi::bool_
-             | '"' > qi::string > '"')
-                [bind(&ast::constant::value, _val)]
-             | list
-                [bind(&ast::ast_node::value, _val)]
+        constant
+            = (
+                  qi::int_
+                | ('\'' > qi::char_ > '\'')
+                | qi::bool_
+                | qi::as_string[qi::lexeme['"' > *(qi::char_ - '"') > '"']]
+                | list
+            ) [
+                bind_node<ast::constant>(_1)
+            ]
         ;
 
-        list[_val = _1]
-            = (enum_list | int_list | char_list)
-                [bind(&ast::list::value, _val)]
+        list
+            = (
+                enum_list | int_list | char_list
+            ) [
+                bind_node<ast::list>(_1)
+            ]
         ;
 
-        enum_list[_val = _1]
-            = "["
-            >> (expression % ",")
-                [bind(&ast::ast_node::value, _val)]
-            > "]"
+        enum_list
+            = (
+                '['
+                >> expression % ','
+                > ']'
+            ) [
+                bind_node<ast::enum_list>(_1)
+            ]
         ;
 
-        int_list[_val = _1]
-            = "["
-            >> qi::int_
-                [bind(&ast::int_list::min, _val)]
-            >> ".."
-            >> qi::int_
-                [bind(&ast::int_list::max, _val)]
-            >> "]"
+        int_list
+            = (
+                '['
+                >> qi::int_
+                >> ".."
+                >> qi::int_
+                >> ']'
+            ) [
+                bind_node<ast::int_list>(_1, _2)
+            ]
         ;
 
-        char_list[_val = _1]
-            = "["
-            >> qi::char_
-                [bind(&ast::char_list::begin, _val)]
-            >> ".."
-            >> qi::char_
-                [bind(&ast::char_list::end, _val)]
-            >> "]"
+        char_list
+            = (
+                '['
+                >> qi::char_
+                >> ".."
+                >> qi::char_
+                >> ']'
+            ) [
+                bind_node<ast::char_list>(_1, _2)
+            ]
         ;
 
-        func_call[_val = _1]
-            = qi::string
-                [bind(&ast::func_call::function_name, _val)]
-            >> (
-                -("("
-                >> call_args
-                >> ")")
-            )
-                [bind(&ast::func_call::maybe_call_arguments, _val)]
+        func_call
+            = (
+                qi::as_string[+qi::char_]
+                >> -(
+                    '('
+                    >> call_args
+                    >> ')')
+            ) [
+                bind_node<ast::func_call>(_1, _2)
+            ]
         ;
 
-        call_args[_val = _1]
-            = (expression % ",")
-                [bind(&ast::call_args::arguments, _val)]
+        call_args
+            = (
+                expression % ','
+            ) [
+                bind_node<ast::call_args>(_1)
+            ]
         ;
+
+        name = qi::as_string[qi::char_("a-zA-Z_") >> *(qi::alnum | qi::char_('_'))];
 
         qi::on_error<qi::fail>
         (
-            root,
+            program,
             // qi::_2 : end of string to parse
             // qi::_3 : iterator at failed point
             // qi::_4 : what failed?
@@ -262,32 +335,32 @@ public:
     }
 
 private:
-    rule<ast::ast_node()> root;
-    rule<ast::program()> program;
-    rule<ast::decl_func()> decl_func;
-    rule<ast::decl_params()> decl_params;
-    rule<ast::decl_param()> decl_param;
-    rule<ast::list_match()> list_match;
-    rule<ast::type_match()> type_match;
-    rule<ast::statement()> statement;
-    rule<ast::let_statement()> let_statement;
-    rule<ast::if_statement()> if_statement;
-    rule<ast::case_statement()> case_statement;
-    rule<ast::case_when()> case_when;
-    rule<ast::expression()> expression;
-    rule<ast::formula()> formula;
-    rule<ast::term()> term;
-    rule<ast::factor()> factor;
-    rule<ast::relational_operator()> relational_operator;
-    rule<ast::additive_operator()> additive_operator;
-    rule<ast::mult_operator()> mult_operator;
-    rule<ast::constant()> constant;
-    rule<ast::list()> list;
-    rule<ast::enum_list()> enum_list;
-    rule<ast::int_list()> int_list;
-    rule<ast::char_list()> char_list;
-    rule<ast::func_call()> func_call;
-    rule<ast::call_args()> call_args;
+    rule<ast::ast_node()> program
+                        , decl_func
+                        , decl_params
+                        , decl_param
+                        , list_match
+                        , type_match
+                        , statement
+                        , let_statement
+                        , if_statement
+                        , case_statement
+                        , case_when
+                        , expression
+                        , formula
+                        , term
+                        , factor
+                        , relational_operator
+                        , additive_operator
+                        , mult_operator
+                        , constant
+                        , list
+                        , enum_list
+                        , int_list
+                        , char_list
+                        , func_call
+                        , call_args;
+    rule<std::string()> name;
 };
 
 ast::ast parser::parse(std::string const& code)

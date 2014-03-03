@@ -113,7 +113,7 @@ struct decl_params{
 };
 
 struct decl_param{
-    ast_node value;
+    boost::variant<ast_node, std::string> value;
     static const char symbol[];
 };
 

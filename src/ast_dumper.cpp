@@ -4,6 +4,7 @@
 
 #include <boost/variant/apply_visitor.hpp>
 #include <boost/variant/static_visitor.hpp>
+#include <boost/variant/get.hpp>
 #include <boost/range/adaptor/transformed.hpp>
 #include <boost/algorithm/string/join.hpp>
 #include <boost/lexical_cast.hpp>
@@ -114,7 +115,11 @@ std::string ast_dumper::operator()(decl_params const& node) const
 
 std::string ast_dumper::operator()(decl_param const& node) const 
 {
-    return symbol(node) + visit_node(node.value);
+    if (auto maybe_match = templa::variant::get<ast_node>(node.value)) {
+        return symbol(node) + visit_node(*maybe_match);
+    } else {
+        return symbol(node) + boost::get<std::string>(node.value) + '\n';
+    }
 }
 
 std::string ast_dumper::operator()(list_match const& node) const

@@ -33,9 +33,9 @@ namespace detail {
     template<class NodeType>
     struct construct_node {
         template<class... Args>
-        NodeType operator()(Args &&... args) const
+        ast::ast_node operator()(Args &&... args) const
         {
-            return {args...};
+            return {NodeType{args...}, 0, 0};
         }
     };
 
@@ -59,7 +59,7 @@ public:
             = (
                 decl_func % "\n"
             ) [
-                bind_node<ast::program>(_1)
+                _val = bind_node<ast::program>(_1)
             ]
         ;
 
@@ -70,7 +70,7 @@ public:
                 >> '='
                 >> statement
             ) [
-                bind_node<ast::decl_func>(_1, _2, _3)
+                _val = bind_node<ast::decl_func>(_1, _2, _3)
             ]
         ;
 
@@ -78,7 +78,7 @@ public:
             = (
                 decl_param % ","
             ) [
-                bind_node<ast::decl_params>(_1)
+                _val = bind_node<ast::decl_params>(_1)
             ]
         ;
 
@@ -88,7 +88,7 @@ public:
                 | type_match
                 | name
             ) [
-                bind_node<ast::decl_param>(_1)
+                _val = bind_node<ast::decl_param>(_1)
             ]
         ;
 
@@ -97,7 +97,7 @@ public:
                 +(name > ":")
                 > name
             ) [
-                bind_node<ast::list_match>(_1, _2)
+                _val = bind_node<ast::list_match>(_1, _2)
             ]
         ;
 
@@ -105,7 +105,7 @@ public:
             = (
                 name > "::" > name
             ) [
-                bind_node<ast::type_match>(_1, _2)
+                _val = bind_node<ast::type_match>(_1, _2)
             ]
         ;
 
@@ -117,7 +117,7 @@ public:
                 | expression
                 ) >> "\n"
             ) [
-                bind_node<ast::statement>(_1)
+                _val = bind_node<ast::statement>(_1)
             ]
         ;
 
@@ -127,7 +127,7 @@ public:
                 >> (decl_func % "\n")
                 >> "in"
             ) [
-                bind_node<ast::let_statement>(_1)
+                _val = bind_node<ast::let_statement>(_1)
             ]
         ;
 
@@ -140,7 +140,7 @@ public:
                 >> "else"
                 >> expression
             ) [
-                bind_node<ast::if_statement>(_1, _2, _3)
+                _val = bind_node<ast::if_statement>(_1, _2, _3)
             ]
         ;
 
@@ -152,7 +152,7 @@ public:
                 >> "otherwise"
                 >> expression
             ) [
-                bind_node<ast::case_statement>(_1, _2)
+                _val = bind_node<ast::case_statement>(_1, _2)
             ]
         ;
 
@@ -163,7 +163,7 @@ public:
                 >> "then"
                 >> expression
             ) [
-                bind_node<ast::case_when>(_1, _2)
+                _val = bind_node<ast::case_when>(_1, _2)
             ]
         ;
 
@@ -172,7 +172,7 @@ public:
                 // TODO: Get operator
                 formula % relational_operator
             ) [
-                bind_node<ast::expression>(_1)
+                _val = bind_node<ast::expression>(_1)
             ]
         ;
 
@@ -185,13 +185,13 @@ public:
                 bind(
                     [](auto const& maybe_sign_char
                      , auto const& terms)
-                        -> ast::formula
+                        -> ast::ast_node
                     {
                         if (maybe_sign_char) {
                             auto const& sign_char = *maybe_sign_char;
-                            return {sign_char == '+' ? ast::formula::sign::plus : ast::formula::sign::minus, terms};
+                            return {ast::formula{sign_char == '+' ? ast::formula::sign::plus : ast::formula::sign::minus, terms}, 0, 0};
                         } else {
-                            return {boost::none, terms};
+                            return {ast::formula{boost::none, terms}, 0, 0};
                         }
                     }, _1, _2)
             ]
@@ -200,7 +200,9 @@ public:
         term
             = (
                 factor % mult_operator
-            ) [bind_node<ast::term>(_1)]
+            ) [
+                _val = bind_node<ast::term>(_1)
+            ]
         ;
 
         factor
@@ -209,7 +211,9 @@ public:
                 | "(" >> expression >> ")"
                 | constant
                 | func_call
-            ) [bind_node<ast::factor>(_1)]
+            ) [
+                _val = bind_node<ast::factor>(_1)
+            ]
         ;
 
         relational_operator
@@ -220,7 +224,9 @@ public:
                  | ">"
                  | "<="
                  | ">="]
-              ) [bind_node<ast::relational_operator>(_1)]
+              ) [
+                _val = bind_node<ast::relational_operator>(_1)
+            ]
         ;
 
         additive_operator
@@ -229,7 +235,9 @@ public:
                  | "-"
                  | "|"
                  | "||"]
-              ) [bind_node<ast::additive_operator>(_1)]
+              ) [
+                _val = bind_node<ast::additive_operator>(_1)
+            ]
         ;
 
         mult_operator
@@ -239,7 +247,9 @@ public:
                  | "%"
                  | "&"
                  | "&&")]
-            ) [bind_node<ast::mult_operator>(_1)]
+            ) [
+                _val = bind_node<ast::mult_operator>(_1)
+            ]
         ;
 
         constant
@@ -250,7 +260,7 @@ public:
                 | qi::as_string[qi::lexeme['"' > *(qi::char_ - '"') > '"']]
                 | list
             ) [
-                bind_node<ast::constant>(_1)
+                _val = bind_node<ast::constant>(_1)
             ]
         ;
 
@@ -258,7 +268,7 @@ public:
             = (
                 enum_list | int_list | char_list
             ) [
-                bind_node<ast::list>(_1)
+                _val = bind_node<ast::list>(_1)
             ]
         ;
 
@@ -268,7 +278,7 @@ public:
                 >> expression % ','
                 > ']'
             ) [
-                bind_node<ast::enum_list>(_1)
+                _val = bind_node<ast::enum_list>(_1)
             ]
         ;
 
@@ -280,7 +290,7 @@ public:
                 >> qi::int_
                 >> ']'
             ) [
-                bind_node<ast::int_list>(_1, _2)
+                _val = bind_node<ast::int_list>(_1, _2)
             ]
         ;
 
@@ -292,7 +302,7 @@ public:
                 >> qi::char_
                 >> ']'
             ) [
-                bind_node<ast::char_list>(_1, _2)
+                _val = bind_node<ast::char_list>(_1, _2)
             ]
         ;
 
@@ -304,7 +314,7 @@ public:
                     >> call_args
                     >> ')')
             ) [
-                bind_node<ast::func_call>(_1, _2)
+                _val = bind_node<ast::func_call>(_1, _2)
             ]
         ;
 
@@ -312,7 +322,7 @@ public:
             = (
                 expression % ','
             ) [
-                bind_node<ast::call_args>(_1)
+                _val = bind_node<ast::call_args>(_1)
             ]
         ;
 

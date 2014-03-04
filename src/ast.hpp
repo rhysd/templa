@@ -89,10 +89,11 @@ public:
             >::type
         >::type;
 
+    value_type value;
+
     std::size_t line;
     std::size_t col;
 
-    value_type value;
 };
 
 struct program{

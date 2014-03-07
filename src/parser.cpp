@@ -47,6 +47,24 @@ inline auto bind_node(Holders &&... holders)
     return phx::bind(detail::construct_node<NodeType>{}, holders...);
 }
 
+namespace detail {
+    template<class Iterator>
+    std::string position_string(Iterator begin, Iterator current)
+    {
+        std::size_t line = 1;
+        std::size_t col = 1;
+        for (; begin != current; ++begin) {
+            if (*begin == '\n') {
+                col = 1;
+                line++;
+                continue;
+            }
+            col++;
+        }
+        return "line: " + std::to_string(line) + ", col: " + std::to_string(col);
+    }
+} // namespace detail
+
 template<class Iterator>
 class grammar : public qi::grammar<Iterator, ast::ast_node(), ascii::space_type> {
     template<class Value>
@@ -380,8 +398,8 @@ ast::ast parser::parse(std::string const& code)
     grammar<decltype(itr)> spiritual_parser;
     ast::ast_node root;
 
-    if (!qi::phrase_parse(itr, end, spiritual_parser, ascii::space, root) || itr != end) {
-        throw std::runtime_error("Syntax error:");
+    if (!qi::phrase_parse(itr, end, spiritual_parser, ascii::blank, root) || itr != end) {
+        throw std::runtime_error("Syntax error: " + detail::position_string(std::begin(code), itr));
     }
     return {root};
 }

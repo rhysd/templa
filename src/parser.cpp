@@ -112,8 +112,8 @@ public:
 
         list_match
             = (
-                +(name > ":")
-                > name
+                +(name >> ":")
+                >> name
             ) [
                 _val = bind_node<ast::list_match>(_1, _2)
             ]
@@ -121,7 +121,7 @@ public:
 
         type_match
             = (
-                name > "::" > name
+                name >> "::" >> name
             ) [
                 _val = bind_node<ast::type_match>(_1, _2)
             ]

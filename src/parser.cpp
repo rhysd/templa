@@ -75,7 +75,7 @@ public:
     {
         program
             = (
-                decl_func % "\n"
+                +decl_func > (qi::eol | qi::eoi)
             ) [
                 _val = bind_node<ast::program>(_1)
             ]
@@ -133,7 +133,7 @@ public:
                 | if_statement
                 | case_statement
                 | expression
-                ) >> "\n"
+                ) > '\n'
             ) [
                 _val = bind_node<ast::statement>(_1)
             ]
@@ -142,7 +142,7 @@ public:
         let_statement
             = (
                 "let"
-                >> (decl_func % "\n")
+                >> +decl_func
                 >> "in"
             ) [
                 _val = bind_node<ast::let_statement>(_1)
@@ -165,7 +165,7 @@ public:
         case_statement
             = (
                 "case"
-                >> *case_when
+                >> *case_when >> '\n'
                 >> "|"
                 >> "otherwise"
                 >> expression
@@ -356,7 +356,7 @@ public:
                 << phx::val( "Error! Expecting " )
                 << qi::_4
                 << phx::val( " here: \"" )
-                << phx::construct<std::string>( qi::_3, _2 )
+                << phx::construct<std::string>( _3, _2 )
                 << phx::val( "\"" )
                 << std::endl
         );

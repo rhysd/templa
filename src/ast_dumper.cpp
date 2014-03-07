@@ -118,7 +118,7 @@ std::string ast_dumper::operator()(decl_param const& node) const
     if (auto maybe_match = templa::variant::get<ast_node>(node.value)) {
         return symbol(node) + visit_node(*maybe_match);
     } else {
-        return symbol(node) + boost::get<std::string>(node.value) + '\n';
+        return std::string(indent, ' ') + decl_param::symbol + ": " + boost::get<std::string>(node.value) + '\n';
     }
 }
 

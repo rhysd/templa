@@ -125,9 +125,9 @@ std::string ast_dumper::operator()(decl_param const& node) const
 std::string ast_dumper::operator()(list_match const& node) const
 {
     return symbol(node) + join(
-                node.elements | transformed([this](auto const& s){ return "DECL_PARAM: " + s; })
+                node.elements | transformed([this](auto const& s){ return std::string(indent+1, ' ') + "ELEM_NAME: " + s; })
               , "\n"
-            );
+            ) + '\n' + std::string(indent+1, ' ') + "REST_ELEMS_NAME: " + node.rest_elems_name;
 }
 
 std::string ast_dumper::operator()(type_match const& node) const

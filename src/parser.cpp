@@ -200,7 +200,7 @@ public:
                 -( qi::char_('+') | qi::char_('-') )
                 >> (term % additive_operator)
             ) [
-                bind(
+                _val = bind(
                     [](auto const& maybe_sign_char
                      , auto const& terms)
                         -> ast::ast_node

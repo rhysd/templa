@@ -66,9 +66,9 @@ namespace detail {
 } // namespace detail
 
 template<class Iterator>
-class grammar : public qi::grammar<Iterator, ast::ast_node(), ascii::space_type> {
+class grammar : public qi::grammar<Iterator, ast::ast_node(), ascii::blank_type> {
     template<class Value>
-    using rule = qi::rule<Iterator, Value, ascii::space_type>;
+    using rule = qi::rule<Iterator, Value, ascii::blank_type>;
 
 public:
     grammar() : grammar::base_type(program)

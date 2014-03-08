@@ -20,12 +20,12 @@ struct decl_params;
 struct decl_param;
 struct list_match;
 struct type_match;
-struct statement;
-struct let_statement;
-struct if_statement;
-struct case_statement;
-struct case_when;
 struct expression;
+struct let_expression;
+struct if_expression;
+struct case_expression;
+struct case_when;
+struct primary_expression;
 struct formula;
 struct term;
 struct factor;
@@ -63,12 +63,12 @@ public:
                     decl_param,
                     list_match,
                     type_match,
-                    statement,
-                    let_statement,
-                    if_statement,
-                    case_statement,
-                    case_when,
                     expression,
+                    let_expression,
+                    if_expression,
+                    case_expression,
+                    case_when,
+                    primary_expression,
                     formula,
                     term,
                     factor,
@@ -104,7 +104,7 @@ struct program{
 struct decl_func{
     std::string function_name;
     boost::optional<ast_node> maybe_declaration_params;
-    ast_node statement;
+    ast_node expression;
     static const char symbol[];
 };
 
@@ -130,24 +130,24 @@ struct type_match{
     static const char symbol[];
 };
 
-struct statement{
+struct expression{
     ast_node value;
     static const char symbol[];
 };
 
-struct let_statement{
+struct let_expression{
     std::vector<ast_node> function_declarations;
     static const char symbol[];
 };
 
-struct if_statement{
+struct if_expression{
     ast_node condition;
     ast_node expression_if_true;
     ast_node expression_if_false;
     static const char symbol[];
 };
 
-struct case_statement{
+struct case_expression{
     std::vector<ast_node> case_when;
     ast_node otherwise_expression;
     static const char symbol[];
@@ -159,7 +159,7 @@ struct case_when{
     static const char symbol[];
 };
 
-struct expression{
+struct primary_expression{
     std::vector<ast_node> formulae;
     // XXX it must has operators
     static const char symbol[];

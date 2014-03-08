@@ -15,12 +15,12 @@ char const decl_params::symbol[] = "DECL_PARAMS";
 char const decl_param::symbol[] = "DECL_PARAM";
 char const list_match::symbol[] = "LIST_MATCH";
 char const type_match::symbol[] = "TYPE_MATCH";
-char const statement::symbol[] = "STMT";
-char const let_statement::symbol[] = "LET_STMT";
-char const if_statement::symbol[] = "IF_STMT";
-char const case_statement::symbol[] = "CASE_STMT";
+char const expression::symbol[] = "STMT";
+char const let_expression::symbol[] = "LET_STMT";
+char const if_expression::symbol[] = "IF_STMT";
+char const case_expression::symbol[] = "CASE_STMT";
 char const case_when::symbol[] = "CASE_WHEN";
-char const expression::symbol[] = "EXPR";
+char const primary_expression::symbol[] = "EXPR";
 char const formula::symbol[] = "FORM";
 char const term::symbol[] = "TERM";
 char const factor::symbol[] = "FACT";
@@ -46,7 +46,7 @@ struct equality_checker : boost::static_visitor<bool> {
     {
         return lhs.function_name == rhs.function_name
                 && lhs.maybe_declaration_params == rhs.maybe_declaration_params
-                && lhs.statement == rhs.statement;
+                && lhs.expression == rhs.expression;
     }
 
     bool operator()(decl_params const& lhs, decl_params const& rhs) const
@@ -70,24 +70,24 @@ struct equality_checker : boost::static_visitor<bool> {
         return lhs.param_name == rhs.param_name && lhs.type_name == rhs.type_name;
     }
 
-    bool operator()(statement const& lhs, statement const& rhs) const
+    bool operator()(expression const& lhs, expression const& rhs) const
     {
         return lhs.value ==  rhs.value;
     }
 
-    bool operator()(let_statement const& lhs, let_statement const& rhs) const
+    bool operator()(let_expression const& lhs, let_expression const& rhs) const
     {
         return boost::equal(lhs.function_declarations, rhs.function_declarations);
     }
 
-    bool operator()(if_statement const& lhs, if_statement const& rhs) const
+    bool operator()(if_expression const& lhs, if_expression const& rhs) const
     {
         return lhs.condition == rhs.condition &&
                lhs.expression_if_true == rhs.expression_if_true &&
                lhs.expression_if_false == rhs.expression_if_false;
     }
 
-    bool operator()(case_statement const& lhs, case_statement const& rhs) const
+    bool operator()(case_expression const& lhs, case_expression const& rhs) const
     {
         return boost::equal(lhs.case_when, rhs.case_when) &&
                 lhs.otherwise_expression == rhs.otherwise_expression;
@@ -99,7 +99,7 @@ struct equality_checker : boost::static_visitor<bool> {
                 && lhs.then_expression == rhs.then_expression;
     }
 
-    bool operator()(expression const& lhs, expression const& rhs) const
+    bool operator()(primary_expression const& lhs, primary_expression const& rhs) const
     {
         return boost::equal(lhs.formulae, rhs.formulae);
     }

@@ -1,27 +1,27 @@
 PROGRAM       : DECL_FUNC {"\n" DECL_FUNC}
-DECL_FUNC     : FUNC_NAME ["(" DECL_PARAMS ")"] "=" STMT
+DECL_FUNC     : FUNC_NAME ["(" DECL_PARAMS ")"] "=" EXPR
 DECL_PARAMS   : DECL_PARAM {"," DECL_PARAM}
 DECL_PARAM    : LIST_MATCH | TYPE_MATCH | PARAM_NAME
 LIST_MATCH    : ELEM_NAME ":" {ELEM_NAME ":"} ELEMS_NAME
 TYPE_MATCH    : PARAM_NAME "::" TYPE_NAME
-STMT          : (LET_STMT | IF_STMT | CASE_STMT | EXPR) "\n"
-LET_STMT      : "let" DECL_FUNC {"\n" DECL_FUNC} "in"
-IF_STMT       : "if" EXPR "then" EXPR "else" EXPR
-CASE_STMT     : "case" "\n" {CASE_WHEN "\n"} "|" "otherwise" EXPR
-CASE_WHEN     : "|" EXPR "then" EXPR
-EXPR          : FORM {RELATIONAL_OP FORM}
+EXPR          : (LET_EXPR | IF_EXPR | CASE_EXPR | PRIMARY_EXPR) "\n"
+LET_EXPR      : "let" DECL_FUNC {"\n" DECL_FUNC} "in"
+IF_EXPR       : "if" PRIMARY_EXPR "then" PRIMARY_EXPR "else" PRIMARY_EXPR
+CASE_EXPR     : "case" "\n" {CASE_WHEN "\n"} "|" "otherwise" PRIMARY_EXPR
+CASE_WHEN     : "|" PRIMARY_EXPR "then" PRIMARY_EXPR
+PRIMARY_EXPR  : FORM {RELATIONAL_OP FORM}
 FORM          : ["+" | "-"] TERM {ADDITIVE_OP TERM}
 TERM          : FACTOR {MULT_OP FACTOR}
-FACTOR        : CONSTANT | FUNC_CALL | "!" FACTOR | "(" EXPR ")"
+FACTOR        : CONSTANT | FUNC_CALL | "!" FACTOR | "(" PRIMARY_EXPR ")"
 RELATIONAL_OP : "==" | "!=" | "<" | ">" | "<=" | ">="
 ADDITIVE_OP   : "+" | "-" | "|" | "||"
 MULT_OP       : "*" | "/" | "%" | "&" | "&&"
 CONSTANT      : INTEGER | CHAR | BOOL | STRING | LIST
 LIST          : ENUM_LIST | INT_LIST | CHAR_LIST
-ENUM_LIST     : "[" [ {EXPR {"," EXPR}}] "]"
+ENUM_LIST     : "[" [ {PRIMARY_EXPR {"," PRIMARY_EXPR}}] "]"
 INT_LIST      : "[" INTEGER ".." INTEGER "]"
 CHAR_LIST     : "[" CHAR ".." CHAR "]"
 FUNC_CALL     : FUNC_NAME ["(" CALL_ARGS ")"]
-CALL_ARGS     : EXPR {"," EXPR}
+CALL_ARGS     : PRIMARY_EXPR {"," PRIMARY_EXPR}
 
 # vim: ft=conf tw=0

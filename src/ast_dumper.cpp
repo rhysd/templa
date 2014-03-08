@@ -30,12 +30,12 @@ struct ast_dumper : boost::static_visitor<std::string> {
     std::string operator()(decl_param const& node) const;
     std::string operator()(list_match const& node) const;
     std::string operator()(type_match const& node) const;
-    std::string operator()(statement const& node) const;
-    std::string operator()(let_statement const& node) const;
-    std::string operator()(if_statement const& node) const;
-    std::string operator()(case_statement const& node) const;
-    std::string operator()(case_when const& node) const;
     std::string operator()(expression const& node) const;
+    std::string operator()(let_expression const& node) const;
+    std::string operator()(if_expression const& node) const;
+    std::string operator()(case_expression const& node) const;
+    std::string operator()(case_when const& node) const;
+    std::string operator()(primary_expression const& node) const;
     std::string operator()(formula const& node) const;
     std::string operator()(term const& node) const;
     std::string operator()(factor const& node) const;
@@ -101,7 +101,7 @@ std::string ast_dumper::operator()(decl_func const& node) const
     if (node.maybe_declaration_params) {
         result += visit_node(*node.maybe_declaration_params) + "\n";
     }
-    result += visit_node(node.statement);
+    result += visit_node(node.expression);
     return result;
 }
 
@@ -137,12 +137,12 @@ std::string ast_dumper::operator()(type_match const& node) const
         std::string(indent+1, ' ') + "TYPE_NAME: " + node.type_name + "\n";
 }
 
-std::string ast_dumper::operator()(statement const& node) const
+std::string ast_dumper::operator()(expression const& node) const
 {
     return symbol(node) + visit_node(node.value);
 }
 
-std::string ast_dumper::operator()(let_statement const& node) const
+std::string ast_dumper::operator()(let_expression const& node) const
 {
     return symbol(node) + join(
                 node.function_declarations | transformed([this](auto const& n){ return visit_node(n); })
@@ -150,7 +150,7 @@ std::string ast_dumper::operator()(let_statement const& node) const
             );
 }
 
-std::string ast_dumper::operator()(if_statement const& node) const
+std::string ast_dumper::operator()(if_expression const& node) const
 {
     return symbol(node) +
             visit_node(node.condition) + "\n" +
@@ -158,7 +158,7 @@ std::string ast_dumper::operator()(if_statement const& node) const
             visit_node(node.expression_if_false);
 }
 
-std::string ast_dumper::operator()(case_statement const& node) const
+std::string ast_dumper::operator()(case_expression const& node) const
 {
     return symbol(node) + join(
                 node.case_when | transformed([this](auto const& n){ return visit_node(n); })
@@ -171,7 +171,7 @@ std::string ast_dumper::operator()(case_when const& node) const
     return symbol(node) + visit_node(node.condition) + "\n" + visit_node(node.then_expression);
 }
 
-std::string ast_dumper::operator()(expression const& node) const
+std::string ast_dumper::operator()(primary_expression const& node) const
 {
     return symbol(node) + join(
                 node.formulae | transformed([this](auto const& n){ return visit_node(n); })

@@ -86,7 +86,7 @@ public:
                 name
                 >> -('(' >> decl_params >> ')')
                 >> '='
-                >> statement
+                >> expression
             ) [
                 _val = bind_node<ast::decl_func>(_1, _2, _3)
             ]
@@ -127,70 +127,70 @@ public:
             ]
         ;
 
-        statement
+        expression
             = (
-                ( let_statement
-                | if_statement
-                | case_statement
-                | expression
+                ( let_expression
+                | if_expression
+                | case_expression
+                | primary_expression
                 ) > '\n'
             ) [
-                _val = bind_node<ast::statement>(_1)
+                _val = bind_node<ast::expression>(_1)
             ]
         ;
 
-        let_statement
+        let_expression
             = (
                 "let"
                 >> +decl_func
                 >> "in"
             ) [
-                _val = bind_node<ast::let_statement>(_1)
+                _val = bind_node<ast::let_expression>(_1)
             ]
         ;
 
-        if_statement
+        if_expression
             = (
                 "if"
-                >> expression
+                >> primary_expression
                 >> "then"
-                >> expression
+                >> primary_expression
                 >> "else"
-                >> expression
+                >> primary_expression
             ) [
-                _val = bind_node<ast::if_statement>(_1, _2, _3)
+                _val = bind_node<ast::if_expression>(_1, _2, _3)
             ]
         ;
 
-        case_statement
+        case_expression
             = (
                 "case"
                 >> *case_when >> '\n'
                 >> "|"
                 >> "otherwise"
-                >> expression
+                >> primary_expression
             ) [
-                _val = bind_node<ast::case_statement>(_1, _2)
+                _val = bind_node<ast::case_expression>(_1, _2)
             ]
         ;
 
         case_when
             = (
                 "|"
-                >> expression
+                >> primary_expression
                 >> "then"
-                >> expression
+                >> primary_expression
             ) [
                 _val = bind_node<ast::case_when>(_1, _2)
             ]
         ;
 
-        expression
+        primary_expression
             = (
                 // TODO: Get operator
                 formula % relational_operator
             ) [
-                _val = bind_node<ast::expression>(_1)
+                _val = bind_node<ast::primary_expression>(_1)
             ]
         ;
 
@@ -226,7 +226,7 @@ public:
         factor
             = (
                   "!" >> factor
-                | "(" >> expression >> ")"
+                | "(" >> primary_expression >> ")"
                 | constant
                 | func_call
             ) [
@@ -293,7 +293,7 @@ public:
         enum_list
             = (
                 '['
-                >> expression % ','
+                >> primary_expression % ','
                 > ']'
             ) [
                 _val = bind_node<ast::enum_list>(_1)
@@ -338,7 +338,7 @@ public:
 
         call_args
             = (
-                expression % ','
+                primary_expression % ','
             ) [
                 _val = bind_node<ast::call_args>(_1)
             ]
@@ -369,12 +369,12 @@ private:
                         , decl_param
                         , list_match
                         , type_match
-                        , statement
-                        , let_statement
-                        , if_statement
-                        , case_statement
-                        , case_when
                         , expression
+                        , let_expression
+                        , if_expression
+                        , case_expression
+                        , case_when
+                        , primary_expression
                         , formula
                         , term
                         , factor

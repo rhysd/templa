@@ -77,7 +77,7 @@ struct equality_checker : boost::static_visitor<bool> {
 
     bool operator()(let_expression const& lhs, let_expression const& rhs) const
     {
-        return boost::equal(lhs.function_declarations, rhs.function_declarations);
+        return boost::equal(lhs.function_declarations, rhs.function_declarations) && lhs.body == rhs.body;
     }
 
     bool operator()(if_expression const& lhs, if_expression const& rhs) const

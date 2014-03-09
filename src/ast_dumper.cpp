@@ -147,7 +147,8 @@ std::string ast_dumper::operator()(let_expression const& node) const
     return symbol(node) + join(
                 node.function_declarations | transformed([this](auto const& n){ return visit_node(n); })
               , "\n"
-            );
+            ) + "\n"
+            + visit_node(node.body);
 }
 
 std::string ast_dumper::operator()(if_expression const& node) const

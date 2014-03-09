@@ -137,6 +137,7 @@ struct expression{
 
 struct let_expression{
     std::vector<ast_node> function_declarations;
+    ast_node body;
     static const char symbol[];
 };
 

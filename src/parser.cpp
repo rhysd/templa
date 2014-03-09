@@ -143,8 +143,9 @@ public:
                 "let" >> -lit('\n')
                 >> +(decl_func >> -lit('\n'))
                 >> "in" >> -lit('\n')
+                >> expression
             ) [
-                _val = bind_node<ast::let_expression>(_1)
+                _val = bind_node<ast::let_expression>(_1, _2)
             ]
         ;
 

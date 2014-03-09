@@ -105,6 +105,7 @@ public:
             = (
                   list_match
                 | type_match
+                | constant
                 | name
             ) [
                 _val = bind_node<ast::decl_param>(_1)

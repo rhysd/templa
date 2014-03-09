@@ -75,7 +75,7 @@ public:
     {
         program
             = (
-                +decl_func > (qi::eol | qi::eoi)
+                decl_func % '\n' > (qi::eol | qi::eoi)
             ) [
                 _val = bind_node<ast::program>(_1)
             ]
@@ -86,7 +86,7 @@ public:
                 name
                 >> -('(' >> decl_params >> ')')
                 >> '='
-                >> expression >> '\n'
+                >> expression
             ) [
                 _val = bind_node<ast::decl_func>(_1, _2, _3)
             ]
@@ -141,7 +141,7 @@ public:
         let_expression
             = (
                 "let" >> -lit('\n')
-                >> +(decl_func >> -lit('\n'))
+                >> decl_func % '\n' >> -lit('\n')
                 >> "in" >> -lit('\n')
                 >> expression
             ) [

@@ -86,7 +86,7 @@ public:
                 name
                 >> -('(' >> decl_params >> ')')
                 >> '='
-                >> expression
+                >> expression >> '\n'
             ) [
                 _val = bind_node<ast::decl_func>(_1, _2, _3)
             ]
@@ -129,11 +129,10 @@ public:
 
         expression
             = (
-                ( let_expression
+                  let_expression
                 | if_expression
                 | case_expression
                 | primary_expression
-                ) > '\n'
             ) [
                 _val = bind_node<ast::expression>(_1)
             ]
@@ -141,9 +140,9 @@ public:
 
         let_expression
             = (
-                "let"
-                >> +decl_func
-                >> "in"
+                "let" >> -lit('\n')
+                >> +(decl_func >> -lit('\n'))
+                >> "in" >> -lit('\n')
             ) [
                 _val = bind_node<ast::let_expression>(_1)
             ]
@@ -152,11 +151,11 @@ public:
         if_expression
             = (
                 "if"
-                >> primary_expression
-                >> "then"
-                >> primary_expression
-                >> "else"
-                >> primary_expression
+                >> expression
+                >> "then" >> -lit('\n')
+                >> expression >> -lit('\n')
+                >> "else" >> -lit('\n')
+                >> expression
             ) [
                 _val = bind_node<ast::if_expression>(_1, _2, _3)
             ]
@@ -164,11 +163,10 @@ public:
 
         case_expression
             = (
-                "case"
-                >> *case_when >> '\n'
-                >> "|"
-                >> "otherwise"
-                >> primary_expression
+                "case" >> lit('\n')
+                >> *(case_when >> '\n')
+                >> "|" >> "otherwise" >> -lit('\n')
+                >> expression
             ) [
                 _val = bind_node<ast::case_expression>(_1, _2)
             ]
@@ -176,10 +174,9 @@ public:
 
         case_when
             = (
-                "|"
-                >> primary_expression
-                >> "then"
-                >> primary_expression
+                "|" >> expression >> -(lit('\n'))
+                >> "then" >> -(lit('\n'))
+                >> expression
             ) [
                 _val = bind_node<ast::case_when>(_1, _2)
             ]

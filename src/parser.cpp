@@ -73,6 +73,7 @@ class grammar : public qi::grammar<Iterator, ast::ast_node(), ascii::blank_type>
 public:
     grammar() : grammar::base_type(program)
     {
+        // TODO: empty line should be ignored by skipper
         program
             = (
                 decl_func % '\n' > (qi::eol | qi::eoi)

@@ -325,11 +325,12 @@ public:
 
         func_call
             = (
-                qi::as_string[+qi::char_]
+                name
                 >> -(
                     '('
                     >> call_args
-                    >> ')')
+                    >> ')'
+                )
             ) [
                 _val = bind_node<ast::func_call>(_1, _2)
             ]

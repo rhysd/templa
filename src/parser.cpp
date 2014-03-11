@@ -345,7 +345,11 @@ public:
             ]
         ;
 
-        name = qi::as_string[(qi::alpha | qi::char_('_')) >> *(qi::alnum | qi::char_('_'))];
+        name
+            =
+                qi::as_string[(qi::alpha | qi::char_('_'))
+                >> *(qi::alnum | qi::char_('_'))]
+        ;
 
         qi::on_error<qi::fail>
         (

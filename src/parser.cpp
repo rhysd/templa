@@ -95,7 +95,7 @@ public:
 
         decl_params
             = (
-                decl_param % ","
+                decl_param % ','
             ) [
                 _val = bind_node<ast::decl_params>(_1)
             ]
@@ -114,7 +114,7 @@ public:
 
         list_match
             = (
-                +(name >> ":")
+                +(name >> ':')
                 >> name
             ) [
                 _val = bind_node<ast::list_match>(_1, _2)
@@ -225,8 +225,8 @@ public:
 
         factor
             = (
-                  "!" >> factor
-                | "(" >> primary_expression >> ")"
+                  '!' >> factor
+                | '(' >> primary_expression >> ')'
                 | constant
                 | func_call
             ) [
@@ -238,8 +238,8 @@ public:
             = (
                 qi::as_string[lit("==")
                  | "!="
-                 | "<"
-                 | ">"
+                 | '<'
+                 | '>'
                  | "<="
                  | ">="]
               ) [
@@ -250,8 +250,8 @@ public:
         additive_operator
             = (
                 qi::as_string[lit("+")
-                 | "-"
-                 | "|"
+                 | '-'
+                 | '|'
                  | "||"]
               ) [
                 _val = bind_node<ast::additive_operator>(_1)
@@ -260,10 +260,10 @@ public:
 
         mult_operator
             = (
-                qi::as_string[(lit("*")
-                 | "/"
-                 | "%"
-                 | "&"
+                qi::as_string[(lit('*')
+                 | '/'
+                 | '%'
+                 | '&'
                  | "&&")]
             ) [
                 _val = bind_node<ast::mult_operator>(_1)

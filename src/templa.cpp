@@ -42,6 +42,9 @@ int main(int const argc, char const* const argv[])
     templa::compiler compiler;
     try {
         compiler.compile(code);
+    } catch (templa::syntax::parse_error const& e) {
+        std::cerr << "Syntax error: " << e.what() << std::endl;
+        return 4;
     } catch (std::exception const& e) {
         std::cerr << "Internal compilation error: " << e.what() << std::endl;
         return 3;

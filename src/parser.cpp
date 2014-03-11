@@ -1,7 +1,7 @@
-#include <stdexcept>
-
 #define BOOST_SPIRIT_USE_PHOENIX_V3
 #define BOOST_RESULT_OF_USE_DECLTYPE 1
+
+#include <utility>
 
 #include <boost/spirit/include/qi.hpp>
 #include <boost/spirit/include/qi_as.hpp>
@@ -49,7 +49,7 @@ inline auto bind_node(Holders &&... holders)
 
 namespace detail {
     template<class Iterator>
-    std::string position_string(Iterator begin, Iterator current)
+    auto position_of(Iterator begin, Iterator current)
     {
         std::size_t line = 1;
         std::size_t col = 1;
@@ -61,7 +61,7 @@ namespace detail {
             }
             col++;
         }
-        return "line: " + std::to_string(line) + ", col: " + std::to_string(col);
+        return std::make_pair(line, col);
     }
 } // namespace detail
 
@@ -356,8 +356,8 @@ public:
             std::cerr
                 << phx::val( "Error! Expecting " )
                 << qi::_4
-                << phx::val( " here: \"" )
-                << phx::construct<std::string>( _3, _2 )
+                << phx::val( "\nhere:\n\"" )
+                << phx::construct<std::string>( _3, _2 ) // TODO: get line and col from iterators
                 << phx::val( "\"" )
                 << std::endl
         );
@@ -400,9 +400,20 @@ ast::ast parser::parse(std::string const& code)
     ast::ast_node root;
 
     if (!qi::phrase_parse(itr, end, spiritual_parser, ascii::blank, root) || itr != end) {
-        throw std::runtime_error("Syntax error: " + detail::position_string(std::begin(code), itr));
+        auto const pos = detail::position_of(std::begin(code), itr);
+        throw parse_error{pos.first, pos.second};
     }
+
     return {root};
+}
+
+std::ostringstream parse_error::buffer;
+char const* parse_error::what() const noexcept
+{
+    auto &buf = parse_error::buffer;
+    buf.str() = "";
+    buf << std::runtime_error::what() << "line " << line << ", col " << col;
+    return buf.str().c_str();
 }
 
 } // namespace syntax

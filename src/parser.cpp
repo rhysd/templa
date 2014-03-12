@@ -27,6 +27,7 @@ using qi::_1;
 using qi::_2;
 using qi::_3;
 using qi::_a;
+using qi::_b;
 using qi::string;
 using phx::bind;
 
@@ -196,13 +197,16 @@ public:
             ]
         ;
 
-        // FIXME: Too dirty
         formula
             = (
-                (-( qi::char_('+') | qi::char_('-') ))[_a = bind([](auto const& maybe_char){ return ast::formula{maybe_char, {}, {}}; }, _1)]
-                >> (term[phx::push_back(bind(&ast::formula::terms, _a), _1)] >> *(additive_operator[phx::push_back(bind(&ast::formula::operators, _a), _1)] >> term[phx::push_back(bind(&ast::formula::terms, _a), _1)]))
+                -( qi::char_('+') | qi::char_('-') )
+                >> term [phx::push_back(_a, _1)]
+                >> *(
+                    additive_operator [phx::push_back(_b, _1)]
+                    >> term [phx::push_back(_a, _1)]
+                )
             ) [
-                _val = bind([](auto const& formula) -> ast::ast_node { return {formula, 0, 0}; }, _a)
+                _val = bind_node<ast::formula>(_1, _a, _b)
             ]
         ;
 
@@ -383,7 +387,7 @@ private:
                         , char_list
                         , func_call
                         , call_args;
-    rule<ast::ast_node(), qi::locals<ast::formula>> formula;
+    rule<ast::ast_node(), qi::locals<std::vector<ast::ast_node>, std::vector<ast::ast_node>>> formula;
     rule<std::string()> name;
 };
 

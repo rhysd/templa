@@ -167,11 +167,7 @@ struct primary_expression{
 };
 
 struct formula{
-    enum struct sign {
-        minus = 1,
-        plus
-    };
-    boost::optional<sign> maybe_sign;
+    boost::optional<char> maybe_sign;
     std::vector<ast_node> terms;
     // XXX it must has operators
     static const char symbol[];

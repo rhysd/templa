@@ -200,18 +200,7 @@ public:
                 -( qi::char_('+') | qi::char_('-') )
                 >> (term % additive_operator)
             ) [
-                _val = bind(
-                    [](auto const& maybe_sign_char
-                     , auto const& terms)
-                        -> ast::ast_node
-                    {
-                        if (maybe_sign_char) {
-                            auto const& sign_char = *maybe_sign_char;
-                            return {ast::formula{sign_char == '+' ? ast::formula::sign::plus : ast::formula::sign::minus, terms}, 0, 0};
-                        } else {
-                            return {ast::formula{boost::none, terms}, 0, 0};
-                        }
-                    }, _1, _2)
+                _val = bind_node<ast::formula>(_1, _2)
             ]
         ;
 

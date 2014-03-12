@@ -184,8 +184,7 @@ std::string ast_dumper::operator()(formula const& node) const
 {
     auto result = symbol(node);
     if (node.maybe_sign) {
-        auto &sign = *node.maybe_sign;
-        result += std::string(indent+1, ' ') + "SIGN: " + (sign == formula::sign::minus ? "-" : "+") + "\n";
+        result += std::string(indent+1, ' ') + "SIGN: " + *node.maybe_sign + "\n";
     }
     result += join(
                 node.terms | transformed([this](auto const& n){ return visit_node(n); })

@@ -27,6 +27,7 @@ using qi::_1;
 using qi::_2;
 using qi::_3;
 using qi::_a;
+using qi::string;
 using phx::bind;
 
 namespace detail {
@@ -226,12 +227,12 @@ public:
 
         relational_operator
             = (
-                qi::as_string[lit("==")
-                 | "!="
-                 | '<'
-                 | '>'
-                 | "<="
-                 | ">="]
+                  string("==")
+                | string("!=")
+                | string("<")
+                | string(">")
+                | string("<=")
+                | string(">=")
               ) [
                 _val = bind_node<ast::relational_operator>(_1)
             ]
@@ -239,10 +240,10 @@ public:
 
         additive_operator
             = (
-                qi::as_string[lit("+")
-                 | '-'
-                 | '|'
-                 | "||"]
+                  string("+")
+                | string("-")
+                | string("|")
+                | string("||")
               ) [
                 _val = bind_node<ast::additive_operator>(_1)
             ]
@@ -250,11 +251,11 @@ public:
 
         mult_operator
             = (
-                qi::as_string[(lit('*')
-                 | '/'
-                 | '%'
-                 | '&'
-                 | "&&")]
+                  string("*")
+                | string("/")
+                | string("%")
+                | string("&")
+                | string("&&")
             ) [
                 _val = bind_node<ast::mult_operator>(_1)
             ]

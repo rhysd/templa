@@ -6,6 +6,7 @@
 #include <boost/variant/static_visitor.hpp>
 #include <boost/variant/get.hpp>
 #include <boost/range/adaptor/transformed.hpp>
+#include <boost/range/numeric.hpp>
 #include <boost/algorithm/string/join.hpp>
 #include <boost/lexical_cast.hpp>
 
@@ -177,9 +178,9 @@ std::string ast_dumper::operator()(primary_expression const& node) const
     return symbol(node) + join(
                 node.formulae | transformed([this](auto const& n){ return visit_node(n); })
               , "\n"
-            ) + "\n" + join(
-                node.operators | transformed([this](auto const& n){ return visit_node(n); })
-              , "\n"
+            ) + boost::accumulate(
+                node.operators | transformed([this](auto const& n){ return "\n" + visit_node(n); })
+              , std::string{}
             );
 }
 
@@ -192,9 +193,9 @@ std::string ast_dumper::operator()(formula const& node) const
     result += join(
                 node.terms | transformed([this](auto const& n){ return visit_node(n); })
               , "\n"
-            ) + "\n" + join(
-                node.operators | transformed([this](auto const& n){ return visit_node(n); })
-              , "\n"
+            ) + boost::accumulate(
+                node.operators | transformed([this](auto const& n){ return "\n" + visit_node(n); })
+              , std::string{}
             );
     return result;
 }
@@ -204,9 +205,9 @@ std::string ast_dumper::operator()(term const& node) const
     return symbol(node) + join(
                 node.factors | transformed([this](auto const& n){ return visit_node(n); })
               , "\n"
-            ) + "\n" + join(
-                node.operators | transformed([this](auto const& n){ return visit_node(n); })
-              , "\n"
+            ) + boost::accumulate(
+                node.operators | transformed([this](auto const& n){ return "\n" + visit_node(n); })
+              , std::string{}
             );
 }
 

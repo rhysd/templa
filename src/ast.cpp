@@ -101,7 +101,7 @@ struct equality_checker : boost::static_visitor<bool> {
 
     bool operator()(primary_expression const& lhs, primary_expression const& rhs) const
     {
-        return boost::equal(lhs.formulae, rhs.formulae);
+        return boost::equal(lhs.formulae, rhs.formulae) && boost::equal(lhs.operators, rhs.operators);
     }
 
     bool operator()(formula const& lhs, formula const& rhs) const
@@ -113,7 +113,7 @@ struct equality_checker : boost::static_visitor<bool> {
 
     bool operator()(term const& lhs, term const& rhs) const
     {
-        return boost::equal(lhs.factors, rhs.factors);
+        return boost::equal(lhs.factors, rhs.factors) && boost::equal(lhs.operators, rhs.operators);
     }
 
     bool operator()(factor const& lhs, factor const& rhs) const

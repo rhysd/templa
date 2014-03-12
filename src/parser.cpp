@@ -190,10 +190,13 @@ public:
 
         primary_expression
             = (
-                // TODO: Get operator
-                formula % relational_operator
+                formula[phx::push_back(_a, _1)]
+                >> *(
+                    relational_operator[phx::push_back(_b, _1)]
+                    >> formula[phx::push_back(_a, _1)]
+                )
             ) [
-                _val = bind_node<ast::primary_expression>(_1)
+                _val = bind_node<ast::primary_expression>(_a, _b)
             ]
         ;
 
@@ -212,9 +215,13 @@ public:
 
         term
             = (
-                factor % mult_operator
+                factor[phx::push_back(_a, _1)]
+                >> *(
+                    mult_operator[phx::push_back(_b, _1)]
+                    >> factor[phx::push_back(_a, _1)]
+                )
             ) [
-                _val = bind_node<ast::term>(_1)
+                _val = bind_node<ast::term>(_a, _b)
             ]
         ;
 
@@ -374,8 +381,6 @@ private:
                         , if_expression
                         , case_expression
                         , case_when
-                        , primary_expression
-                        , term
                         , factor
                         , relational_operator
                         , additive_operator
@@ -387,7 +392,15 @@ private:
                         , char_list
                         , func_call
                         , call_args;
-    rule<ast::ast_node(), qi::locals<std::vector<ast::ast_node>, std::vector<ast::ast_node>>> formula;
+    rule<
+        ast::ast_node(),
+        qi::locals<
+            std::vector<ast::ast_node>,
+            std::vector<ast::ast_node>
+        >
+    > formula
+    , primary_expression
+    , term;
     rule<std::string()> name;
 };
 

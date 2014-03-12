@@ -162,7 +162,7 @@ struct case_when{
 
 struct primary_expression{
     std::vector<ast_node> formulae;
-    // XXX it must has operators
+    std::vector<ast_node> operators;
     static const char symbol[];
 };
 
@@ -175,7 +175,7 @@ struct formula{
 
 struct term{
     std::vector<ast_node> factors;
-    // XXX it must has operators
+    std::vector<ast_node> operators;;
     static const char symbol[];
 };
 

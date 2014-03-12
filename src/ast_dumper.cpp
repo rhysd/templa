@@ -177,6 +177,9 @@ std::string ast_dumper::operator()(primary_expression const& node) const
     return symbol(node) + join(
                 node.formulae | transformed([this](auto const& n){ return visit_node(n); })
               , "\n"
+            ) + "\n" + join(
+                node.operators | transformed([this](auto const& n){ return visit_node(n); })
+              , "\n"
             );
 }
 
@@ -200,6 +203,9 @@ std::string ast_dumper::operator()(term const& node) const
 {
     return symbol(node) + join(
                 node.factors | transformed([this](auto const& n){ return visit_node(n); })
+              , "\n"
+            ) + "\n" + join(
+                node.operators | transformed([this](auto const& n){ return visit_node(n); })
               , "\n"
             );
 }

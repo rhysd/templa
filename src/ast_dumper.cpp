@@ -189,6 +189,9 @@ std::string ast_dumper::operator()(formula const& node) const
     result += join(
                 node.terms | transformed([this](auto const& n){ return visit_node(n); })
               , "\n"
+            ) + "\n" + join(
+                node.operators | transformed([this](auto const& n){ return visit_node(n); })
+              , "\n"
             );
     return result;
 }

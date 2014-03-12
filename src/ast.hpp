@@ -169,7 +169,7 @@ struct primary_expression{
 struct formula{
     boost::optional<char> maybe_sign;
     std::vector<ast_node> terms;
-    // XXX it must has operators
+    std::vector<ast_node> operators;
     static const char symbol[];
 };
 

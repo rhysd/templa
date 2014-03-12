@@ -106,7 +106,9 @@ struct equality_checker : boost::static_visitor<bool> {
 
     bool operator()(formula const& lhs, formula const& rhs) const
     {
-        return lhs.maybe_sign == rhs.maybe_sign && boost::equal(lhs.terms, rhs.terms);
+        return lhs.maybe_sign == rhs.maybe_sign
+            && boost::equal(lhs.terms, rhs.terms)
+            && boost::equal(lhs.operators, rhs.operators);
     }
 
     bool operator()(term const& lhs, term const& rhs) const

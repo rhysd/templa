@@ -18,6 +18,7 @@ namespace ast {
 
 using boost::adaptors::transformed;
 using boost::algorithm::join;
+using std::literals::string_literals::operator ""s;
 
 struct ast_dumper : boost::static_visitor<std::string> {
 
@@ -59,9 +60,15 @@ private:
 
     // Deduct A from its argument
     template<class A>
-    std::string symbol(A const &) const
+    auto symbol(A const &) const
     {
         return std::string(indent, ' ') + A::symbol + "\n";
+    }
+
+    template<class A>
+    auto symbol_prefix(A const &) const
+    {
+        return std::string(indent, ' ') + A::symbol + ": "s;
     }
 
     std::size_t indent;
@@ -78,11 +85,22 @@ struct constant_visitor : boost::static_visitor<std::string> {
         return boost::apply_visitor(ast_dumper{indent + 1}, n.value);
     }
 
+    std::string operator()(std::string const& s) const
+    {
+        return '"' + s + '"';
+    }
+
+    std::string operator()(char const& c) const
+    {
+        return {'\'', c, '\''};
+    }
+
     template<class T>
     std::string operator()(T const& t) const
     {
-        return std::string(indent+1, ' ') + boost::lexical_cast<std::string>(t);
+        return boost::lexical_cast<std::string>(t);
     }
+
     std::size_t indent;
 };
 
@@ -119,7 +137,7 @@ std::string ast_dumper::operator()(decl_param const& node) const
     if (auto maybe_match = templa::variant::get<ast_node>(node.value)) {
         return symbol(node) + visit_node(*maybe_match);
     } else {
-        return std::string(indent, ' ') + decl_param::symbol + ": " + boost::get<std::string>(node.value) + '\n';
+        return symbol_prefix(node) + boost::get<std::string>(node.value) + '\n';
     }
 }
 
@@ -233,7 +251,7 @@ std::string ast_dumper::operator()(mult_operator const& node) const
 
 std::string ast_dumper::operator()(constant const& node) const
 {
-    return symbol(node) + boost::apply_visitor(constant_visitor{indent}, node.value);
+    return symbol_prefix(node) + boost::apply_visitor(constant_visitor{indent}, node.value);
 }
 
 std::string ast_dumper::operator()(list const& node) const

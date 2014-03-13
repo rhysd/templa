@@ -175,7 +175,7 @@ struct formula{
 
 struct term{
     std::vector<ast_node> factors;
-    std::vector<ast_node> operators;;
+    std::vector<ast_node> operators;
     static const char symbol[];
 };
 

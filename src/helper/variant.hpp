@@ -29,12 +29,32 @@ namespace detail {
         }
     };
 
+    template<class T>
+    struct type_checker : public boost::static_visitor<bool> {
+        bool operator()(T const&) const
+        {
+            return true;
+        }
+
+        template<class U>
+        bool operator()(U const&) const
+        {
+            return false;
+        }
+    };
+
 } // namespace detail
 
 template<class T, class... Args>
 inline boost::optional<T> get(boost::variant<Args...> const& v)
 {
     return boost::apply_visitor(detail::static_getter<T>{}, v);
+}
+
+template<class T, class... Args>
+inline bool has(boost::variant<Args...> const& v)
+{
+    return boost::apply_visitor(detail::type_checker<T>{}, v);
 }
 
 } // namespace variant

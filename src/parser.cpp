@@ -360,7 +360,7 @@ public:
             // qi::_3 : iterator at failed point
             // qi::_4 : what failed?
             std::cerr
-                << phx::val( "Error! Expecting " )
+                << phx::val( "Error: Expecting " )
                 << qi::_4
                 << phx::val( "\nhere:\n\"" )
                 << phx::construct<std::string>( _3, _2 ) // TODO: get line and col from iterators
@@ -392,6 +392,7 @@ private:
                         , char_list
                         , func_call
                         , call_args;
+
     rule<
         ast::ast_node(),
         qi::locals<
@@ -401,6 +402,7 @@ private:
     > formula
     , primary_expression
     , term;
+
     rule<std::string()> name;
 };
 

@@ -18,7 +18,6 @@ namespace ast {
 
 using boost::adaptors::transformed;
 using boost::algorithm::join;
-using std::literals::string_literals::operator ""s;
 
 struct ast_dumper : boost::static_visitor<std::string> {
 
@@ -68,7 +67,7 @@ private:
     template<class A>
     auto symbol_prefix(A const &) const
     {
-        return std::string(indent, ' ') + A::symbol + ": "s;
+        return std::string(indent, ' ') + A::symbol + ": ";
     }
 
     std::size_t indent;

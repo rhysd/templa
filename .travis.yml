@@ -1,6 +1,7 @@
 language: cpp
+compiler: clang
 script:
-    - clang++ --version
+    - /usr/bin/clang++ --version
     - cmake .
     - make
 install:
@@ -10,4 +11,3 @@ install:
     - sudo add-apt-repository --yes 'deb http://llvm.org/apt/precise/ llvm-toolchain-precise main'
     - sudo apt-get -qq update
     - sudo apt-get -qq install clang-3.5 llvm-3.5 libboost1.55-all-dev cmake
-    - hash -r
